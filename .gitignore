@@ -1,5 +1,6 @@
 # Archivos sensibles
 config/database.php
+config/database.local.php
 vendor/
 .env
 *.log
