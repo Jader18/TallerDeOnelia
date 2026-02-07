@@ -1,0 +1,277 @@
+/* ==========================================================================
+   Reset y base
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: #2d2d2d;
+    background: #fff;
+}
+
+/* ==========================================================================
+   Contenedor principal
+   ========================================================================== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+header {
+    background: #1a365d;
+    color: white;
+    padding: 1.2rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo h1 {
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2.5rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #a5b4fc;
+}
+
+/* ==========================================================================
+   Hero
+   ========================================================================== */
+.hero {
+    background: linear-gradient(rgba(26, 54, 93, 0.65), rgba(26, 54, 93, 0.65)),
+                url('../img/hero-bg.jpg') center/cover no-repeat;
+    color: white;
+    text-align: center;
+    padding: 12rem 0 8rem;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero h1 {
+    font-size: 4.2rem;
+    margin-bottom: 1.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.hero p {
+    font-size: 1.5rem;
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    opacity: 0.95;
+}
+
+.btn-primary {
+    display: inline-block;
+    background: #6366f1;
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: #4f46e5;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+/* ==========================================================================
+   Secciones generales
+   ========================================================================== */
+section {
+    padding: 6rem 0;
+}
+
+h2 {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 3rem;
+    color: #1a365d;
+    position: relative;
+}
+
+h2::after {
+    content: '';
+    width: 80px;
+    height: 4px;
+    background: #6366f1;
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* ==========================================================================
+   Calendario
+   ========================================================================== */
+.calendario {
+    background: #f8fafc;
+}
+
+#calendar {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* ==========================================================================
+   Galería de tipos de arreglos (cards)
+   ========================================================================== */
+.arreglos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+}
+
+.arreglo-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.arreglo-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.arreglo-card img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+.arreglo-info {
+    padding: 1.8rem;
+    text-align: center;
+}
+
+.arreglo-info h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+    color: #1a365d;
+}
+
+.arreglo-info p {
+    color: #64748b;
+    margin-bottom: 1.2rem;
+}
+
+.precio {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #6366f1;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+footer {
+    background: #0f172a;
+    color: #cbd5e1;
+    text-align: center;
+    padding: 4rem 0 2rem;
+}
+
+footer .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+footer h4 {
+    color: white;
+    margin-bottom: 1.2rem;
+    font-size: 1.3rem;
+}
+
+footer ul {
+    list-style: none;
+}
+
+footer a {
+    color: #cbd5e1;
+    text-decoration: none;
+    line-height: 2;
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: #a5b4fc;
+}
+
+.copyright {
+    border-top: 1px solid #334155;
+    padding-top: 2rem;
+    font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 768px) {
+    .hero {
+        padding: 8rem 0 6rem;
+    }
+    .hero h1 {
+        font-size: 3rem;
+    }
+    .hero p {
+        font-size: 1.3rem;
+    }
+    header .container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    nav ul {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    footer .container {
+        grid-template-columns: 1fr;
+    }
+}
