@@ -1,48 +1,43 @@
-<?php
-// components/tipos-arreglos.php
-// Lista dinámica de tipos de arreglos desde la BD
+<div class="arreglos-grid">
 
-require_once realpath(__DIR__ . '/../config/database.php');
+    <div class="arreglo-card">
+        <img src="assets/img/tipos-eventos/15-anos.jpg" alt="15 años">
+        <div class="arreglo-info">
+            <h3>15 años</h3>
+            <p>Arreglos elegantes y modernos para celebrar los 15 años.</p>
+        </div>
+    </div>
 
-try {
-    if (!isset($pdo) || !$pdo instanceof PDO) {
-        throw new Exception("PDO no está definido o no es válido");
-    }
+    <div class="arreglo-card">
+        <img src="assets/img/tipos-eventos/baby-shower.jpg" alt="Baby shower">
+        <div class="arreglo-info">
+            <h3>Baby Shower</h3>
+            <p>Arreglos tiernos y creativos para celebrar la llegada del bebé.</p>
+        </div>
+    </div>
 
-    $stmt = $pdo->query("
-        SELECT id, nombre, descripcion, precio_base, duracion_horas 
-        FROM tipos_arreglo 
-        WHERE activo = 1 
-        ORDER BY precio_base ASC
-    ");
-    $arreglos = $stmt->fetchAll();
+    <div class="arreglo-card">
+        <img src="assets/img/tipos-eventos/boda.jpeg" alt="Boda">
+        <div class="arreglo-info">
+            <h3>Boda</h3>
+            <p>Arreglos románticos y sofisticados para el día más especial.</p>
+        </div>
+    </div>
 
-    if (empty($arreglos)) {
-        echo '<p style="text-align: center; color: #64748b;">No hay tipos de arreglos disponibles en este momento.</p>';
-    } else {
-        echo '<div class="arreglos-grid">';
-        
-        foreach ($arreglos as $arreglo) {
-            $imagen = 'assets/img/arreglos/' . strtolower(str_replace(' ', '-', $arreglo['nombre'])) . '.jpg';
-            if (!file_exists($imagen)) {
-                $imagen = 'assets/img/placeholder-arreglo.jpg';
-            }
+    <div class="arreglo-card">
+        <img src="assets/img/tipos-eventos/cumpleanos-infantil.jpg" alt="Cumpleaños infantil">
+        <div class="arreglo-info">
+            <h3>Cumpleaños Infantil</h3>
+            <p>Arreglos divertidos y coloridos para los más pequeños.</p>
+        </div>
+    </div>
+    
+    <div class="arreglo-card">
+        <img src="assets/img/tipos-eventos/decoracion-empresarial.jpg" alt="Decoración empresarial">
+        <div class="arreglo-info">
+            <h3>Decoración Empresarial</h3>
+            <p>Arreglos para eventos corporativos y reuniones.</p>
+        </div>
+    </div>
 
-            echo '
-            <div class="arreglo-card">
-                <img src="' . htmlspecialchars($imagen) . '" alt="' . htmlspecialchars($arreglo['nombre']) . '">
-                <div class="arreglo-info">
-                    <h3>' . htmlspecialchars($arreglo['nombre']) . '</h3>
-                    <p>' . htmlspecialchars($arreglo['descripcion'] ?: 'Arreglo personalizado con duración aproximada de ' . $arreglo['duracion_horas'] . ' horas.') . '</p>
-                    <div class="precio">Desde €' . number_format($arreglo['precio_base'], 2, ',', '.') . '</div>
-                </div>
-            </div>';
-        }
-
-        echo '</div>';
-    }
-} catch (Exception $e) {
-    echo '<p style="text-align: center; color: #ef4444;">Error al cargar los arreglos: ' . htmlspecialchars($e->getMessage()) . '</p>';
-}
-
-?>
+</div>
