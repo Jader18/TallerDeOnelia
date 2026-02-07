@@ -1,0 +1,11 @@
+# Archivos sensibles
+config/database.php
+vendor/
+.env
+*.log
+
+# Temporales y editores
+.DS_Store
+Thumbs.db
+.vscode/
+node_modules/
