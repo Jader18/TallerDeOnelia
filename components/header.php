@@ -1,14 +1,18 @@
 <header>
     <div class="container">
         <div class="logo">
-            <h1>El Taller de Onelia</h1>
+            <a href="/">
+                <img src="/assets/img/logo/logo2.png" alt="El Taller de Onelia">
+                
+            </a>
         </div>
+
         <nav>
             <ul>
                 <li><a href="/">Inicio</a></li>
+                <li><a href="/#eventos">Tipos de eventos</a></li>
                 <li><a href="/#calendario">Reservar</a></li>
-                <li><a href="#">Tipos de arreglos</a></li>
-                <li><a href="#">Contacto</a></li>
+                <li><a href="/#contacto">Contacto</a></li>
             </ul>
         </nav>
     </div>
