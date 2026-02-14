@@ -54,8 +54,8 @@ $tipos = $stmt->fetchAll();
                     </div>
 
                     <div class="form-group">
-                        <label for="hora_fin">Hora de fin</label>
-                        <input type="time" name="hora_fin" id="hora_fin">
+                        <label for="hora_fin">Hora de fin *</label>
+                        <input type="time" name="hora_fin" id="hora_fin" required>
                     </div>
 
                     <div class="form-group">
@@ -169,9 +169,7 @@ $tipos = $stmt->fetchAll();
                     },
                     events: 'api/get-disponibilidad.php',
 
-                    // 🔹 COLORES CORREGIDOS (igual que el primer calendario)
                     eventDidMount: function(info) {
-
                         if (info.event.classNames.includes('disponible')) {
                             info.el.style.backgroundColor = '#2ea74a';
                             info.el.style.borderColor = '#154920';
@@ -181,7 +179,6 @@ $tipos = $stmt->fetchAll();
                             info.el.style.borderColor = '#dc3545';
                             info.el.style.color = '#721c24';
                         }
-
                     },
 
                     dateClick: function(info) {
@@ -207,11 +204,25 @@ $tipos = $stmt->fetchAll();
             }
         });
 
-        // Envío del formulario de reserva
+        // Envío del formulario de reserva (CON VALIDACIÓN DE HORAS)
         document.getElementById('form-reserva').addEventListener('submit', function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
+
+            const horaInicio = document.getElementById('hora_inicio').value;
+            const horaFin = document.getElementById('hora_fin').value;
             const respuesta = document.getElementById('respuesta-form');
+
+            // 🔹 Validación de horas
+            if (horaFin) {
+                if (horaFin <= horaInicio) {
+                    respuesta.style.background = '#f8d7da';
+                    respuesta.style.color = '#721c24';
+                    respuesta.innerHTML = 'Hora de inicio y Hora de fin deben ser válidas.';
+                    return;
+                }
+            }
+
+            const formData = new FormData(this);
 
             fetch('api/crear-reserva.php', {
                     method: 'POST',
@@ -304,6 +315,7 @@ $tipos = $stmt->fetchAll();
             }
         });
     </script>
+
 
 
 </body>
