@@ -16,6 +16,28 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+    <!-- 🔴 Color rojito quemado para botones del calendario -->
+    <style>
+        .fc .fc-button {
+            background-color: #8B2E2E !important;
+            border-color: #721c24 !important;
+            color: #ffffff !important;
+        }
+
+        .fc .fc-button:hover {
+            background-color: #721c24 !important;
+            border-color: #5a1a1f !important;
+        }
+
+        .fc .fc-button:active,
+        .fc .fc-button:focus {
+            background-color: #721c24 !important;
+            border-color: #5a1a1f !important;
+            box-shadow: none !important;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -64,7 +86,55 @@
     <?php include 'components/footer.php'; ?>
 
     <script>
-        // Swiper
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('Inicializando FullCalendar');
+
+            const calendarEl = document.getElementById('calendar');
+
+            if (!calendarEl) {
+                console.error('Elemento #calendar no encontrado');
+                return;
+            }
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                timeZone: 'America/Managua',
+                height: 'auto',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth'
+                },
+                events: 'api/get-disponibilidad.php',
+                eventDidMount: function(info) {
+                    if (info.event.classNames.includes('disponible')) {
+                        info.el.style.backgroundColor = '#2ea74a';
+                        info.el.style.borderColor = '#154920';
+                        info.el.style.color = '#146e29';
+                    } else if (info.event.classNames.includes('ocupado')) {
+                        info.el.style.backgroundColor = '#f8d7da';
+                        info.el.style.borderColor = '#dc3545';
+                        info.el.style.color = '#721c24';
+                    }
+                }
+            });
+
+            calendar.setOption('buttonText', {
+                today: 'Hoy',
+                month: 'Mes'
+            });
+
+            calendar.render();
+
+            setTimeout(function() {
+                calendar.updateSize();
+            }, 300);
+
+        });
+
+
         const swiper = new Swiper(".mySwiper", {
             loop: true,
             autoplay: {
@@ -79,17 +149,6 @@
                 el: ".swiper-pagination",
                 clickable: true
             },
-        });
-
-        // FullCalendar
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'es',
-                height: 'auto'
-            });
-            calendar.render();
         });
     </script>
 
