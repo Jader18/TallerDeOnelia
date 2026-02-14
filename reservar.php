@@ -25,27 +25,30 @@ $tipos = $stmt->fetchAll();
     <main>
         <section class="reserva">
             <div class="container">
+
                 <h1>Reservar tu fecha</h1>
                 <p>Selecciona el tipo de evento, fecha y hora disponible. Te contactaremos para confirmar detalles.</p>
 
                 <form id="form-reserva" class="form-reserva">
+
                     <div class="form-group">
                         <label for="tipo_evento_id">Tipo de evento *</label>
                         <select name="tipo_evento_id" id="tipo_evento_id" required>
+                            <option value="" disabled selected hidden>Selecciona un tipo de evento</option>
                             <?php foreach ($tipos as $t): ?>
                                 <option value="<?= $t['id'] ?>" data-precio="<?= $t['precio_base'] ?>">
                                     <?= htmlspecialchars($t['nombre']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <div id="precio-evento" style="margin-top: 0.5rem; font-weight: 600; color: var(--secondary);"></div>
+                        <div id="precio-evento" style="margin-top:0.5rem;font-weight:600;color:var(--secondary);"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="fecha_evento">Fecha *</label>
                         <div id="reserva-calendar"></div>
                         <input type="date" name="fecha_evento" id="fecha_evento" required min="<?= date('Y-m-d') ?>">
-                        <span id="fecha-mensaje" style="color: #dc3545; font-size: 0.9rem; display: none;">La fecha no está disponible</span>
+                        <span id="fecha-mensaje" style="color:#dc3545;font-size:0.9rem;display:none;">La fecha no está disponible</span>
                     </div>
 
                     <div class="form-group">
@@ -86,46 +89,98 @@ $tipos = $stmt->fetchAll();
                     <button type="submit" class="btn btn-reservar" id="btn-enviar">Enviar reserva</button>
                 </form>
 
-                <div id="respuesta-form" style="margin-top: 2rem; padding: 1rem; border-radius: 8px;"></div>
+                <div id="respuesta-form" style="margin-top:2rem;padding:1rem;border-radius:8px;"></div>
             </div>
         </section>
 
         <section class="gestion-reserva">
             <div class="container">
                 <h2>Ver estado o cancelar reserva</h2>
+
                 <form id="form-gestion">
                     <div class="form-group">
                         <label for="order_id">Número de orden (TO-XXXXX) *</label>
-                        <input type="text" name="order_id" id="order_id" required placeholder="Ej: TO-12345" pattern="TO-[0-9]{5}" title="Formato: TO seguido de 5 números">
+                        <input type="text" name="order_id" id="order_id" required placeholder="Ej: TO-12345" pattern="TO-[0-9]{5}">
                     </div>
                     <button type="submit" class="btn">Ver estado</button>
                     <button type="button" id="cancelar-reserva" class="btn btn-danger">Cancelar reserva</button>
                 </form>
-                <div id="respuesta-gestion" style="margin-top: 2rem; padding: 1rem; border-radius: 8px;"></div>
+
+                <div id="respuesta-gestion" style="margin-top:2rem;padding:1rem;border-radius:8px;"></div>
             </div>
         </section>
     </main>
 
     <?php include 'components/footer.php'; ?>
 
+    <!-- Modal personalizado -->
+    <div id="custom-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:2rem;border-radius:12px;width:90%;max-width:400px;text-align:center;">
+            <p id="modal-message" style="margin-bottom:1.5rem;"></p>
+            <div id="modal-buttons"></div>
+        </div>
+    </div>
+
     <script>
-        // Mostrar precio del tipo de evento seleccionado
+        function mostrarMensaje(div, bg, color, mensaje) {
+            div.style.background = bg;
+            div.style.color = color;
+            div.innerHTML = mensaje;
+            div.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        function showModal(message, type = 'alert') {
+            return new Promise(resolve => {
+                const modal = document.getElementById('custom-modal');
+                const msg = document.getElementById('modal-message');
+                const buttons = document.getElementById('modal-buttons');
+                msg.innerText = message;
+                buttons.innerHTML = '';
+                modal.style.display = 'flex';
+
+                if (type === 'confirm') {
+                    buttons.innerHTML = `<button id="ok" class="btn" style="margin-right:10px;">Confirmar</button>
+                    <button id="cancel" class="btn btn-danger">Cancelar</button>`;
+                    document.getElementById('ok').onclick = () => {
+                        modal.style.display = 'none';
+                        resolve(true);
+                    }
+                    document.getElementById('cancel').onclick = () => {
+                        modal.style.display = 'none';
+                        resolve(false);
+                    }
+                } else if (type === 'prompt') {
+                    buttons.innerHTML = `<input type="text" id="modal-input" class="form-control" style="margin-bottom:1rem;width:100%;padding:0.5rem;">
+                    <button id="ok" class="btn">Aceptar</button>`;
+                    document.getElementById('ok').onclick = () => {
+                        const value = document.getElementById('modal-input').value;
+                        modal.style.display = 'none';
+                        resolve(value);
+                    }
+                }
+            });
+        }
+
+        // Precio dinámico
         document.getElementById('tipo_evento_id').addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const precio = selectedOption.dataset.precio;
-            const precioDiv = document.getElementById('precio-evento');
+            const selected = this.options[this.selectedIndex];
+            const precio = selected.dataset.precio;
+            const div = document.getElementById('precio-evento');
             if (precio && precio > 0) {
-                precioDiv.innerHTML = `Precio base: C$${parseFloat(precio).toLocaleString('es-NI', {minimumFractionDigits: 2})}`;
+                div.innerHTML = `Precio base: C$${parseFloat(precio).toLocaleString('es-NI',{minimumFractionDigits:2})}`;
             } else {
-                precioDiv.innerHTML = '';
+                div.innerHTML = '';
             }
         });
 
-        // Validación de fecha en tiempo real
+        // Validación fecha
         document.getElementById('fecha_evento').addEventListener('change', function() {
             const fecha = this.value;
             const mensaje = document.getElementById('fecha-mensaje');
-            const btnEnviar = document.getElementById('btn-enviar');
+            const btn = document.getElementById('btn-enviar');
 
             if (fecha) {
                 fetch('api/check-fecha-disponible.php?fecha=' + fecha)
@@ -133,28 +188,29 @@ $tipos = $stmt->fetchAll();
                     .then(data => {
                         if (data.disponible) {
                             mensaje.style.display = 'none';
-                            btnEnviar.disabled = false;
+                            btn.disabled = false;
                         } else {
                             mensaje.style.display = 'block';
                             mensaje.innerHTML = 'La fecha no está disponible';
-                            btnEnviar.disabled = true;
+                            btn.disabled = true;
                         }
                     })
                     .catch(() => {
                         mensaje.style.display = 'block';
                         mensaje.innerHTML = 'Error al verificar disponibilidad';
-                        btnEnviar.disabled = true;
+                        btn.disabled = true;
                     });
             } else {
                 mensaje.style.display = 'none';
-                btnEnviar.disabled = false;
+                btn.disabled = false;
             }
         });
 
+        // Calendario 
         document.addEventListener('DOMContentLoaded', function() {
-            const reservaCalendarEl = document.getElementById('reserva-calendar');
-            if (reservaCalendarEl) {
-                const reservaCalendar = new FullCalendar.Calendar(reservaCalendarEl, {
+            const el = document.getElementById('reserva-calendar');
+            if (el) {
+                const calendar = new FullCalendar.Calendar(el, {
                     initialView: 'dayGridMonth',
                     locale: 'es',
                     timeZone: 'America/Managua',
@@ -168,7 +224,6 @@ $tipos = $stmt->fetchAll();
                         today: 'Hoy'
                     },
                     events: 'api/get-disponibilidad.php',
-
                     eventDidMount: function(info) {
                         if (info.event.classNames.includes('disponible')) {
                             info.el.style.backgroundColor = '#2ea74a';
@@ -180,46 +235,46 @@ $tipos = $stmt->fetchAll();
                             info.el.style.color = '#721c24';
                         }
                     },
-
                     dateClick: function(info) {
-                        const eventsOnDate = reservaCalendar.getEvents().filter(ev => ev.startStr === info.dateStr);
-                        const isDisponible = eventsOnDate.some(ev => ev.classNames.includes('disponible'));
-                        const btnEnviar = document.getElementById('btn-enviar');
+                        const events = calendar.getEvents().filter(ev => ev.startStr === info.dateStr);
+                        const isDisponible = events.some(ev => ev.classNames.includes('disponible'));
+                        const btn = document.getElementById('btn-enviar');
                         const mensaje = document.getElementById('fecha-mensaje');
 
                         if (isDisponible) {
                             document.getElementById('fecha_evento').value = info.dateStr;
                             document.getElementById('fecha_evento').dispatchEvent(new Event('change'));
                             mensaje.style.display = 'none';
-                            btnEnviar.disabled = false;
+                            btn.disabled = false;
                         } else {
                             mensaje.style.display = 'block';
                             mensaje.innerHTML = 'La fecha no está disponible';
-                            btnEnviar.disabled = true;
+                            btn.disabled = true;
                         }
                     }
                 });
-
-                reservaCalendar.render();
+                calendar.render();
             }
         });
 
-        // Envío del formulario de reserva (CON VALIDACIÓN DE HORAS)
-        document.getElementById('form-reserva').addEventListener('submit', function(e) {
+        // Submit reserva
+        document.getElementById('form-reserva').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const horaInicio = document.getElementById('hora_inicio').value;
             const horaFin = document.getElementById('hora_fin').value;
             const respuesta = document.getElementById('respuesta-form');
 
-            // 🔹 Validación de horas
-            if (horaFin) {
-                if (horaFin <= horaInicio) {
-                    respuesta.style.background = '#f8d7da';
-                    respuesta.style.color = '#721c24';
-                    respuesta.innerHTML = 'Hora de inicio y Hora de fin deben ser válidas.';
-                    return;
-                }
+            if (horaFin && horaFin <= horaInicio) {
+                mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Hora de fin debe ser posterior a hora de inicio.');
+                return;
+            }
+
+            const confirmar = await showModal("Verifica que todos los datos sean correctos antes de enviar la reserva.\n\n¿Deseas confirmar y enviar la reserva ahora?", 'confirm');
+
+            if (!confirmar) {
+                mostrarMensaje(respuesta, '#fff3cd', '#856404', 'Envío cancelado. Puedes modificar los datos.');
+                return;
             }
 
             const formData = new FormData(this);
@@ -230,30 +285,32 @@ $tipos = $stmt->fetchAll();
                 })
                 .then(r => r.json())
                 .then(data => {
-                    respuesta.style.background = data.success ? '#d4edda' : '#f8d7da';
-                    respuesta.style.color = data.success ? '#155724' : '#721c24';
-                    respuesta.innerHTML = data.message;
+                    mostrarMensaje(respuesta,
+                        data.success ? '#d4edda' : '#f8d7da',
+                        data.success ? '#155724' : '#721c24',
+                        data.message);
                     if (data.success) {
                         this.reset();
+                        document.getElementById('precio-evento').innerHTML = '';
+
                     }
                 })
                 .catch(() => {
-                    respuesta.style.background = '#f8d7da';
-                    respuesta.style.color = '#721c24';
-                    respuesta.innerHTML = 'Error de conexión. Intenta de nuevo.';
+                    mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Error de conexión. Intenta de nuevo.');
                 });
         });
 
-        // Gestión de reserva
+        // Gestión y cancelación 
+
+        // Ver estado de reserva
         document.getElementById('form-gestion').addEventListener('submit', function(e) {
             e.preventDefault();
+
             const orderId = document.getElementById('order_id').value.trim();
             const respuesta = document.getElementById('respuesta-gestion');
 
             if (!/^TO-[0-9]{5}$/.test(orderId)) {
-                respuesta.style.background = '#f8d7da';
-                respuesta.style.color = '#721c24';
-                respuesta.innerHTML = 'Formato inválido: debe ser TO seguido de 5 números';
+                mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Formato inválido: debe ser TO seguido de 5 números');
                 return;
             }
 
@@ -269,55 +326,57 @@ $tipos = $stmt->fetchAll();
                 })
                 .then(r => r.json())
                 .then(data => {
-                    respuesta.style.background = data.success ? '#d4edda' : '#f8d7da';
-                    respuesta.style.color = data.success ? '#155724' : '#721c24';
-                    respuesta.innerHTML = data.message;
+                    mostrarMensaje(
+                        respuesta,
+                        data.success ? '#d4edda' : '#f8d7da',
+                        data.success ? '#155724' : '#721c24',
+                        data.message
+                    );
+                })
+                .catch(() => {
+                    mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Error de conexión. Intenta nuevamente.');
                 });
         });
 
-        document.getElementById('cancelar-reserva').addEventListener('click', function() {
+        document.getElementById('cancelar-reserva').addEventListener('click', async function() {
             const orderId = document.getElementById('order_id').value.trim();
             const respuesta = document.getElementById('respuesta-gestion');
 
             if (!/^TO-[0-9]{5}$/.test(orderId)) {
-                respuesta.style.background = '#f8d7da';
-                respuesta.style.color = '#721c24';
-                respuesta.innerHTML = 'Formato inválido: debe ser TO seguido de 5 números';
+                mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Formato inválido: debe ser TO seguido de 5 números');
                 return;
             }
 
-            const motivo = prompt('Ingresa el motivo de cancelación:');
+            const motivo = await showModal('Ingresa el motivo de cancelación:', 'prompt');
+
             if (!motivo || motivo.trim() === '') {
-                respuesta.style.background = '#f8d7da';
-                respuesta.style.color = '#721c24';
-                respuesta.innerHTML = 'Debes ingresar un motivo para cancelar';
+                mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Debes ingresar un motivo para cancelar');
                 return;
             }
 
-            if (confirm('¿Seguro que quieres cancelar esta reserva?')) {
-                fetch('api/gestion-reserva.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            order_id: orderId,
-                            accion: 'cancelar',
-                            motivo: motivo.trim()
-                        })
+            const confirmar = await showModal('¿Seguro que quieres cancelar esta reserva?', 'confirm');
+            if (!confirmar) return;
+
+            fetch('api/gestion-reserva.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        accion: 'cancelar',
+                        motivo: motivo.trim()
                     })
-                    .then(r => r.json())
-                    .then(data => {
-                        respuesta.style.background = data.success ? '#d4edda' : '#f8d7da';
-                        respuesta.style.color = data.success ? '#155724' : '#721c24';
-                        respuesta.innerHTML = data.message;
-                    });
-            }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    mostrarMensaje(respuesta,
+                        data.success ? '#d4edda' : '#f8d7da',
+                        data.success ? '#155724' : '#721c24',
+                        data.message);
+                });
         });
     </script>
-
-
-
 </body>
 
 </html>

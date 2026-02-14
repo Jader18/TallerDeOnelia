@@ -475,13 +475,13 @@ footer a:hover { color: var(--secondary); }
 }
 
 .btn-reservar {
-    background: var(--secondary);
+    background: #8f6253;
     color: white;
-    box-shadow: 0 4px 15px rgba(200, 155, 123, 0.3);
+    box-shadow: 0 4px 15px rgba(131, 86, 54, 0.3);
 }
 
 .btn-reservar:hover {
-    background: #b37c5e;
+    background: #5e3a2d;
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(200, 155, 123, 0.4);
 }
@@ -489,7 +489,7 @@ footer a:hover { color: var(--secondary); }
 .btn-danger {
     background: #dc3545;
     color: white;
-    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    box-shadow: 0 4px 15px rgba(200, 155, 123, 0.4);
 }
 
 .btn-danger:hover {
@@ -503,6 +503,13 @@ footer a:hover { color: var(--secondary); }
     cursor: not-allowed;
     box-shadow: none;
 }
+
+/* Tipo de letra para textarea */
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+}
+
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -45,6 +45,6 @@ if ($input['accion'] === 'estado') {
     if ($stmt->rowCount() > 0) {
         echo json_encode(['success' => true, 'message' => 'Reserva cancelada con éxito']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'No se pudo cancelar (ya no pendiente o no encontrada)']);
+        echo json_encode(['success' => false, 'message' => 'No se pudo cancelar (ya no está pendiente o no fue encontrada). Contactanos de ser necesario.']);
     }
 }
