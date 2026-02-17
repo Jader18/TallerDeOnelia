@@ -318,33 +318,60 @@ footer {
 
 footer .container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
+}
+
+.footer-brand {
+    text-align: center;
 }
 
 .footer-logo {
     max-height: 80px;
     width: auto;
-    margin-bottom: 1rem;
+    display: block;
+    margin: 0 auto 1rem;
+    object-fit: contain;
 }
 
-footer ul { list-style: none; }
+.footer-brand h2 {
+    margin: 0.5rem 0;
+    font-size: 1.5rem;
+}
 
-footer a { color: var(--text-light); }
+.footer-brand p {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
 
-footer a:hover { color: var(--secondary); }
+footer ul {
+    list-style: none;
+    padding: 0;
+}
+
+footer a {
+    color: var(--text-light);
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: var(--secondary);
+}
 
 .copyright {
     text-align: center;
     padding-top: 2rem;
     border-top: 1px solid #5a3f36;
     margin-top: 2rem;
+    font-size: 0.9rem;
 }
 
 /* Social links */
 .social-links {
     display: flex;
     gap: 15px;
+    justify-content: center;
 }
 
 .social-links a {
@@ -363,67 +390,6 @@ footer a:hover { color: var(--secondary); }
 .social-links a:hover {
     background-color: #e91e63;
     color: #fff;
-}
-
-.fc-toolbar, .fc-button {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-}
-
-.fc-header-toolbar {
-    padding: 1rem 0;
-}
-
-.fc .fc-toolbar-title {
-    font-size: 1.4rem;
-}
-
-.fc .fc-daygrid-day {
-    cursor: pointer;
-}
-
-.form-reserva {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 2rem;
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-
-.form-group textarea {
-    resize: vertical;
-}
-
-/* Para gestión de reserva */
-.gestion-reserva {
-    margin-top: 4rem;
-}
-
-#cancelar-reserva {
-    background: #dc3545;
-    color: white;
-    margin-left: 1rem;
 }
 
 /* Calendario dentro del formulario de reserva */
@@ -461,7 +427,6 @@ footer a:hover { color: var(--secondary); }
 }
 
 /* Botones del formulario de reserva */
-
 .btn {
     display: inline-block;
     padding: 0.9rem 2rem;
@@ -489,7 +454,7 @@ footer a:hover { color: var(--secondary); }
 .btn-danger {
     background: #dc3545;
     color: white;
-    box-shadow: 0 4px 15px rgba(200, 155, 123, 0.4);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
 }
 
 .btn-danger:hover {
@@ -508,6 +473,22 @@ footer a:hover { color: var(--secondary); }
 textarea {
     font-family: inherit;
     font-size: inherit;
+}
+
+/* Alineación perfecta en sección de redes sociales del footer */
+.redes-sociales {
+    text-align: center;          
+}
+
+.redes-sociales h2 {
+    margin-bottom: 1rem;        
+    text-align: center;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;     
+    gap: 15px;
 }
 
 

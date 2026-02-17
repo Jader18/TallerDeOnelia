@@ -1,10 +1,17 @@
 <?php
 require_once 'config/database.php';
 
+// Capturar fecha enviada desde index.php
+$fechaPreseleccionada = null;
+if (isset($_GET['fecha']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['fecha'])) {
+    $fechaPreseleccionada = $_GET['fecha'];
+}
+
 // Cargar tipos de evento con precio
 $stmt = $pdo->query("SELECT id, nombre, precio_base FROM tipos_evento WHERE activo = 1 ORDER BY nombre");
 $tipos = $stmt->fetchAll();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -25,12 +32,10 @@ $tipos = $stmt->fetchAll();
     <main>
         <section class="reserva">
             <div class="container">
-
                 <h1>Reservar tu fecha</h1>
                 <p>Selecciona el tipo de evento, fecha y hora disponible. Te contactaremos para confirmar detalles.</p>
 
                 <form id="form-reserva" class="form-reserva">
-
                     <div class="form-group">
                         <label for="tipo_evento_id">Tipo de evento *</label>
                         <select name="tipo_evento_id" id="tipo_evento_id" required>
@@ -47,7 +52,12 @@ $tipos = $stmt->fetchAll();
                     <div class="form-group">
                         <label for="fecha_evento">Fecha *</label>
                         <div id="reserva-calendar"></div>
-                        <input type="date" name="fecha_evento" id="fecha_evento" required min="<?= date('Y-m-d') ?>">
+                        <input type="date"
+                            name="fecha_evento"
+                            id="fecha_evento" required
+                            min="<?= date('Y-m-d') ?>"
+                            value="<?= $fechaPreseleccionada ?? '' ?>">
+
                         <span id="fecha-mensaje" style="color:#dc3545;font-size:0.9rem;display:none;">La fecha no está disponible</span>
                     </div>
 
@@ -142,24 +152,35 @@ $tipos = $stmt->fetchAll();
                 modal.style.display = 'flex';
 
                 if (type === 'confirm') {
-                    buttons.innerHTML = `<button id="ok" class="btn" style="margin-right:10px;">Confirmar</button>
-                    <button id="cancel" class="btn btn-danger">Cancelar</button>`;
-                    document.getElementById('ok').onclick = () => {
-                        modal.style.display = 'none';
-                        resolve(true);
-                    }
-                    document.getElementById('cancel').onclick = () => {
+                    buttons.innerHTML = `
+                        <button id="cancelar-modal" style="padding:0.6rem 1.4rem; background:#ffffff; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:500; color:#333;">Cancelar</button>
+                        <button id="confirmar-modal" class="btn btn-reservar" style="padding:0.6rem 1.4rem;">Confirmar</button>
+                    `;
+                    document.getElementById('cancelar-modal').onclick = () => {
                         modal.style.display = 'none';
                         resolve(false);
-                    }
+                    };
+                    document.getElementById('confirmar-modal').onclick = () => {
+                        modal.style.display = 'none';
+                        resolve(true);
+                    };
                 } else if (type === 'prompt') {
-                    buttons.innerHTML = `<input type="text" id="modal-input" class="form-control" style="margin-bottom:1rem;width:100%;padding:0.5rem;">
-                    <button id="ok" class="btn">Aceptar</button>`;
-                    document.getElementById('ok').onclick = () => {
-                        const value = document.getElementById('modal-input').value;
+                    buttons.innerHTML = `
+                        <input type="text" id="modal-input" style="width:100%; padding:0.8rem; margin-bottom:1rem; border-radius:6px; border:1px solid #ccc;">
+                        <div style="margin-top:1rem; display:flex; justify-content:center; gap:1rem;">
+                            <button id="cancelar-modal" style="padding:0.6rem 1.4rem; background:#ffffff; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:500; color:#333;">Cancelar</button>
+                            <button id="confirmar-modal" class="btn btn-reservar" style="padding:0.6rem 1.4rem;">Aceptar</button>
+                        </div>
+                    `;
+                    document.getElementById('cancelar-modal').onclick = () => {
+                        modal.style.display = 'none';
+                        resolve('');
+                    };
+                    document.getElementById('confirmar-modal').onclick = () => {
+                        const value = document.getElementById('modal-input').value.trim();
                         modal.style.display = 'none';
                         resolve(value);
-                    }
+                    };
                 }
             });
         }
@@ -254,6 +275,13 @@ $tipos = $stmt->fetchAll();
                     }
                 });
                 calendar.render();
+
+                // 🔹 Si viene fecha desde index.php
+                <?php if ($fechaPreseleccionada): ?>
+                    calendar.gotoDate('<?= $fechaPreseleccionada ?>');
+                    document.getElementById('fecha_evento').dispatchEvent(new Event('change'));
+                <?php endif; ?>
+
             }
         });
 
@@ -292,7 +320,6 @@ $tipos = $stmt->fetchAll();
                     if (data.success) {
                         this.reset();
                         document.getElementById('precio-evento').innerHTML = '';
-
                     }
                 })
                 .catch(() => {
@@ -347,15 +374,17 @@ $tipos = $stmt->fetchAll();
                 return;
             }
 
-            const motivo = await showModal('Ingresa el motivo de cancelación:', 'prompt');
-
-            if (!motivo || motivo.trim() === '') {
-                mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Debes ingresar un motivo para cancelar');
+            const motivoSeleccionado = await showModalMotivo();
+            if (!motivoSeleccionado) {
+                mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Operación cancelada');
                 return;
             }
 
             const confirmar = await showModal('¿Seguro que quieres cancelar esta reserva?', 'confirm');
-            if (!confirmar) return;
+            if (!confirmar) {
+                mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Operación cancelada');
+                return;
+            }
 
             fetch('api/gestion-reserva.php', {
                     method: 'POST',
@@ -365,7 +394,7 @@ $tipos = $stmt->fetchAll();
                     body: JSON.stringify({
                         order_id: orderId,
                         accion: 'cancelar',
-                        motivo: motivo.trim()
+                        motivo: motivoSeleccionado.trim()
                     })
                 })
                 .then(r => r.json())
@@ -374,8 +403,81 @@ $tipos = $stmt->fetchAll();
                         data.success ? '#d4edda' : '#f8d7da',
                         data.success ? '#155724' : '#721c24',
                         data.message);
+                })
+                .catch(() => {
+                    mostrarMensaje(respuesta, '#f8d7da', '#721c24', 'Error de conexión');
                 });
         });
+
+        // Función para el modal de motivos
+        async function showModalMotivo() {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+                modal.style.background = 'rgba(0,0,0,0.6)';
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.zIndex = '9999';
+
+                const content = document.createElement('div');
+                content.style.background = 'white';
+                content.style.padding = '2rem';
+                content.style.borderRadius = '12px';
+                content.style.maxWidth = '400px';
+                content.style.width = '90%';
+                content.style.boxShadow = '0 8px 30px rgba(0,0,0,0.3)';
+                content.style.textAlign = 'center';
+
+                content.innerHTML = `
+                    <h3 style="margin-top:0; color:#7a4a3a;">Motivo de cancelación</h3>
+                    <p style="margin-bottom:1.5rem;">Selecciona el motivo principal:</p>
+                    <select id="motivo-select" style="width:100%; padding:0.8rem; margin-bottom:1rem; border-radius:6px; border:1px solid #ccc;">
+                        <option value="">Selecciona un motivo...</option>
+                        <option value="Cambio de planes">Cambio de planes</option>
+                        <option value="Fecha no disponible para mí">Fecha no disponible para mí</option>
+                        <option value="Problemas personales">Problemas personales</option>
+                        <option value="Encontré otra opción">Encontré otra opción</option>
+                        <option value="Otro">Otro (especificar abajo)</option>
+                    </select>
+                    <textarea id="motivo-otro" placeholder="Especifica aquí si elegiste 'Otro'" style="width:100%; height:80px; padding:0.8rem; border-radius:6px; border:1px solid #ccc; display:none;"></textarea>
+                    <div style="margin-top:1.5rem; text-align:right; display:flex; justify-content:flex-end; gap:1rem;">
+                        <button id="cancelar-modal" style="padding:0.6rem 1.4rem; background:#ffffff; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:500; color:#333;">Cancelar</button>
+                        <button id="confirmar-modal" class="btn btn-reservar" style="padding:0.6rem 1.4rem;">Confirmar</button>
+                    </div>
+                `;
+
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+
+                const select = content.querySelector('#motivo-select');
+                const textarea = content.querySelector('#motivo-otro');
+                const btnCancelar = content.querySelector('#cancelar-modal');
+                const btnConfirmar = content.querySelector('#confirmar-modal');
+
+                select.addEventListener('change', function() {
+                    textarea.style.display = this.value === 'Otro' ? 'block' : 'none';
+                });
+
+                btnCancelar.addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                    resolve(null);
+                });
+
+                btnConfirmar.addEventListener('click', () => {
+                    let motivo = select.value;
+                    if (motivo === 'Otro') {
+                        motivo = textarea.value.trim();
+                    }
+                    document.body.removeChild(modal);
+                    resolve(motivo || null);
+                });
+            });
+        }
     </script>
 </body>
 

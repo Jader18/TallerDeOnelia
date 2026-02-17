@@ -1,7 +1,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <footer>
-    
     <div class="container footer-content">
         
         <!-- Marca -->
@@ -32,14 +31,17 @@
                 <a href="https://www.tiktok.com/@oneliamirandaartesana" target="_blank"><i class="fab fa-tiktok"></i></a>
             </div>
         </section>
-
     </div>
 
-    <!-- Derechos reservados -->
+    <!-- Derechos reservados + enlace admin -->
     <div class="footer-bottom">
         <div class="container">
-            <p>&copy; <?= date('Y') ?> El Taller de Onelia. Todos los derechos reservados.</p>
+            <p>
+                &copy; <?= date('Y') ?> El Taller de Onelia. Todos los derechos reservados.
+                <span style="margin-left: 1.5rem; font-size: 0.75rem; color: #aaa;">
+                    <a href="/admin/login.php" style="color: #aaa; text-decoration: none;">Admin</a>
+                </span>
+            </p>
         </div>
     </div>
-
 </footer>

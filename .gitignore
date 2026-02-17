@@ -5,6 +5,9 @@ vendor/
 .env
 *.log
 
+# Archivo para generar hash de contraseña, no debe subirse al repositorio
+generar_hash.php 
+
 # Temporales y editores
 .DS_Store
 Thumbs.db

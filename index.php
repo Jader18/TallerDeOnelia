@@ -17,24 +17,81 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
-    <!-- 🔴 Color rojito quemado para botones del calendario -->
     <style>
-        .fc .fc-button {
-            background-color: #8B2E2E !important;
-            border-color: #721c24 !important;
-            color: #ffffff !important;
+        #calendar .fc-button {
+            background: var(--primary) !important;
+            border: none !important;
+            color: white !important;
         }
 
-        .fc .fc-button:hover {
-            background-color: #721c24 !important;
-            border-color: #5a1a1f !important;
+        #calendar .fc-button:hover {
+            background: #5e3a2d !important;
         }
 
-        .fc .fc-button:active,
-        .fc .fc-button:focus {
-            background-color: #721c24 !important;
-            border-color: #5a1a1f !important;
-            box-shadow: none !important;
+        .btn-reservar-cal {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 1rem auto 2rem;
+            padding: 1rem 2rem;
+            background: #8f6253;
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(131, 86, 54, 0.3);
+        }
+
+        .btn-reservar-cal:hover {
+            background: #5e3a2d;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(200, 155, 123, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .btn-reservar-cal {
+                font-size: 1.1rem;
+                padding: 0.9rem 1.8rem;
+            }
+        }
+
+        /* Modal personalizado */
+        #custom-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #custom-modal .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        #custom-modal button {
+            padding: 0.6rem 1.4rem;
+            background: #8f6253;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #custom-modal button:hover {
+            background: #5e3a2d;
         }
     </style>
 
@@ -78,6 +135,7 @@
         <section class="calendario" id="calendario">
             <div class="container">
                 <h2>Disponibilidad</h2>
+                <a href="reservar.php" class="btn-reservar-cal">Reservar</a>
                 <div id="calendar"></div>
             </div>
         </section>
@@ -85,7 +143,28 @@
 
     <?php include 'components/footer.php'; ?>
 
+    <!-- Modal HTML -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <p id="modal-message"></p>
+            <button id="modal-close">Entendido</button>
+        </div>
+    </div>
+
     <script>
+        function showModal(message) {
+            const modal = document.getElementById('custom-modal');
+            const msg = document.getElementById('modal-message');
+            const btn = document.getElementById('modal-close');
+
+            msg.innerText = message;
+            modal.style.display = 'flex';
+
+            btn.onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
 
             console.log('Inicializando FullCalendar');
@@ -118,6 +197,16 @@
                         info.el.style.borderColor = '#dc3545';
                         info.el.style.color = '#721c24';
                     }
+                },
+                dateClick: function(info) {
+                    const eventsOnDate = calendar.getEvents().filter(ev => ev.startStr === info.dateStr);
+                    const isDisponible = eventsOnDate.some(ev => ev.classNames.includes('disponible'));
+
+                    if (isDisponible) {
+                        window.location.href = `reservar.php?fecha=${info.dateStr}`;
+                    } else {
+                        showModal('La fecha no está disponible. Por favor selecciona otra.');
+                    }
                 }
             });
 
@@ -133,7 +222,6 @@
             }, 300);
 
         });
-
 
         const swiper = new Swiper(".mySwiper", {
             loop: true,
@@ -153,5 +241,4 @@
     </script>
 
 </body>
-
 </html>
