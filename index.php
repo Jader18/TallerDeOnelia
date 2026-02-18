@@ -28,31 +28,6 @@
             background: #5e3a2d !important;
         }
 
-        .btn-reservar-cal {
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 1rem auto 2rem;
-            padding: 1rem 2rem;
-            background: #8f6253;
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 1.2rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(131, 86, 54, 0.3);
-        }
-
-        .btn-reservar-cal:hover {
-            background: #5e3a2d;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(200, 155, 123, 0.4);
-        }
-
         @media (max-width: 768px) {
             .btn-reservar-cal {
                 font-size: 1.1rem;
@@ -60,7 +35,7 @@
             }
         }
 
-        /* Modal personalizado */
+        /* Modal personalizado usando clases del CSS */
         #custom-modal {
             display: none;
             position: fixed;
@@ -79,19 +54,17 @@
             max-width: 400px;
             text-align: center;
         }
-
-        #custom-modal button {
-            padding: 0.6rem 1.4rem;
-            background: #8f6253;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        #custom-modal button:hover {
-            background: #5e3a2d;
+        
+        /* Animación para hero */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 
@@ -102,8 +75,10 @@
     <?php include 'components/header.php'; ?>
 
     <main id="inicio">
-        <section class="hero">
-            <h1>Decoramos tus momentos más especiales</h1>
+        <!-- Hero mejorado -->
+        <section class="hero" style="padding: 4rem 0 3rem; background: linear-gradient(135deg, #fff 0%, var(--bg-light) 100%);">
+            <h1 style="font-size: clamp(2.2rem, 6vw, 3.5rem); color: var(--primary); margin-bottom: 1rem; animation: fadeInUp 0.8s ease;">Decoramos tus momentos más especiales</h1>
+            <p style="font-size: 1.2rem; color: var(--text-dark); opacity: 0.8; max-width: 700px; margin: 0 auto; animation: fadeInUp 1s ease;">Creando experiencias únicas con detalles que enamoran</p>
         </section>
 
         <section class="carrusel" id="galeria">
@@ -127,15 +102,21 @@
 
         <section class="eventos" id="eventos">
             <div class="container">
-                <h2>Tipos de Eventos</h2>
+                <h2 style="text-align: center; font-size: 2.5rem; color: var(--primary); margin-bottom: 2rem; position: relative; display: inline-block; width: 100%;">
+                    Tipos de Eventos
+                    <span style="display: block; width: 80px; height: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); margin: 0.5rem auto 0; border-radius: 3px;"></span>
+                </h2>
                 <?php include 'components/tipos-eventos.php'; ?>
             </div>
         </section>
 
         <section class="calendario" id="calendario">
             <div class="container">
-                <h2>Disponibilidad</h2>
-                <a href="reservar.php" class="btn-reservar-cal">Reservar</a>
+                <h2 style="text-align: center; font-size: 2.5rem; color: var(--primary); margin-bottom: 2rem; position: relative; display: inline-block; width: 100%;">
+                    Disponibilidad
+                    <span style="display: block; width: 80px; height: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); margin: 0.5rem auto 0; border-radius: 3px;"></span>
+                </h2>
+                <a href="reservar.php" class="btn btn-reservar" style="display: block; width: 100%; max-width: 300px; margin: 1rem auto 2rem;">Reservar</a>
                 <div id="calendar"></div>
             </div>
         </section>
@@ -143,11 +124,11 @@
 
     <?php include 'components/footer.php'; ?>
 
-    <!-- Modal HTML -->
+    <!-- Modal HTML con botón usando clases del CSS -->
     <div id="custom-modal">
         <div class="modal-content">
             <p id="modal-message"></p>
-            <button id="modal-close">Entendido</button>
+            <button id="modal-close" class="btn btn-reservar" style="padding: 0.6rem 1.4rem;">Entendido</button>
         </div>
     </div>
 

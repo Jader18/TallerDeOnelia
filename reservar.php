@@ -1,17 +1,20 @@
 <?php
 require_once 'config/database.php';
 
-// Capturar fecha enviada desde index.php
 $fechaPreseleccionada = null;
 if (isset($_GET['fecha']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['fecha'])) {
     $fechaPreseleccionada = $_GET['fecha'];
+}
+
+$tipoSeleccionado = null;
+if (isset($_GET['tipo']) && is_numeric($_GET['tipo'])) {
+    $tipoSeleccionado = (int)$_GET['tipo'];
 }
 
 // Cargar tipos de evento con precio
 $stmt = $pdo->query("SELECT id, nombre, precio_base FROM tipos_evento WHERE activo = 1 ORDER BY nombre");
 $tipos = $stmt->fetchAll();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">
@@ -32,91 +35,117 @@ $tipos = $stmt->fetchAll();
     <main>
         <section class="reserva">
             <div class="container">
-                <h1>Reservar tu fecha</h1>
-                <p>Selecciona el tipo de evento, fecha y hora disponible. Te contactaremos para confirmar detalles.</p>
-
-                <form id="form-reserva" class="form-reserva">
-                    <div class="form-group">
-                        <label for="tipo_evento_id">Tipo de evento *</label>
-                        <select name="tipo_evento_id" id="tipo_evento_id" required>
-                            <option value="" disabled selected hidden>Selecciona un tipo de evento</option>
-                            <?php foreach ($tipos as $t): ?>
-                                <option value="<?= $t['id'] ?>" data-precio="<?= $t['precio_base'] ?>">
-                                    <?= htmlspecialchars($t['nombre']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div id="precio-evento" style="margin-top:0.5rem;font-weight:600;color:var(--secondary);"></div>
+                <!-- Formulario de reserva mejorado -->
+                <div class="reserva-form-container">
+                    <div class="form-header">
+                        <h2>Reserva tu fecha</h2>
+                        <p>Selecciona el tipo de evento, fecha y hora disponible. Te contactaremos para confirmar detalles.</p>
                     </div>
+                    
+                    <div class="form-body">
+                        <form id="form-reserva" class="form-reserva">
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="tipo_evento_id">Tipo de evento *</label>
+                                    <select name="tipo_evento_id" id="tipo_evento_id" required>
+                                        <option value="" disabled <?= !$tipoSeleccionado ? 'selected' : '' ?> hidden>Selecciona un tipo de evento</option>
+                                        <?php foreach ($tipos as $t): ?>
+                                            <option value="<?= $t['id'] ?>" 
+                                                data-precio="<?= $t['precio_base'] ?>"
+                                                <?= ($tipoSeleccionado == $t['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($t['nombre']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div id="precio-evento" style="margin-top:0.5rem;font-weight:600;color:var(--secondary);"></div>
+                                </div>
 
-                    <div class="form-group">
-                        <label for="fecha_evento">Fecha *</label>
-                        <div id="reserva-calendar"></div>
-                        <input type="date"
-                            name="fecha_evento"
-                            id="fecha_evento" required
-                            min="<?= date('Y-m-d') ?>"
-                            value="<?= $fechaPreseleccionada ?? '' ?>">
+                                <div class="form-group full-width">
+                                    <label for="fecha_evento">Fecha *</label>
+                                    <div class="calendar-section">
+                                        <h3>Calendario de disponibilidad</h3>
+                                        <div id="reserva-calendar"></div>
+                                    </div>
+                                    <input type="date"
+                                        name="fecha_evento"
+                                        id="fecha_evento" required
+                                        min="<?= date('Y-m-d') ?>"
+                                        value="<?= $fechaPreseleccionada ?? '' ?>"
+                                        style="margin-top:1rem;">
 
-                        <span id="fecha-mensaje" style="color:#dc3545;font-size:0.9rem;display:none;">La fecha no está disponible</span>
+                                    <span id="fecha-mensaje" class="error-message" style="display:none;">La fecha no está disponible</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="hora_inicio">Hora de inicio *</label>
+                                    <input type="time" name="hora_inicio" id="hora_inicio" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="hora_fin">Hora de fin *</label>
+                                    <input type="time" name="hora_fin" id="hora_fin" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cliente_nombre">Nombre completo *</label>
+                                    <input type="text" name="cliente_nombre" id="cliente_nombre" required placeholder="Ej: Juan Pérez">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cliente_email">Email *</label>
+                                    <input type="email" name="cliente_email" id="cliente_email" required placeholder="correo@ejemplo.com">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cliente_telefono">Teléfono *</label>
+                                    <input type="tel" name="cliente_telefono" id="cliente_telefono" required placeholder="Ej: 8888-8888">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="direccion_evento">Dirección del evento *</label>
+                                    <input type="text" name="direccion_evento" id="direccion_evento" required placeholder="Dirección completa">
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="notas">Notas adicionales (incluye detalles para personalizar tu decoración) *</label>
+                                    <textarea name="notas" id="notas" rows="4" required placeholder="Describe los detalles de tu evento..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-reservar" id="btn-enviar">Enviar reserva</button>
+                            </div>
+                        </form>
+
+                        <div id="respuesta-form" class="respuesta-mensaje" style="margin-top:2rem;padding:1rem;border-radius:8px;display:none;"></div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="hora_inicio">Hora de inicio *</label>
-                        <input type="time" name="hora_inicio" id="hora_inicio" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="hora_fin">Hora de fin *</label>
-                        <input type="time" name="hora_fin" id="hora_fin" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cliente_nombre">Nombre completo *</label>
-                        <input type="text" name="cliente_nombre" id="cliente_nombre" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cliente_email">Email *</label>
-                        <input type="email" name="cliente_email" id="cliente_email" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cliente_telefono">Teléfono *</label>
-                        <input type="tel" name="cliente_telefono" id="cliente_telefono" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="direccion_evento">Dirección del evento *</label>
-                        <input type="text" name="direccion_evento" id="direccion_evento" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="notas">Notas adicionales (incluye detalles para personalizar tu decoración) *</label>
-                        <textarea name="notas" id="notas" rows="4" required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-reservar" id="btn-enviar">Enviar reserva</button>
-                </form>
-
-                <div id="respuesta-form" style="margin-top:2rem;padding:1rem;border-radius:8px;"></div>
+                </div>
             </div>
         </section>
 
         <section class="gestion-reserva">
             <div class="container">
-                <h2>Ver estado o cancelar reserva</h2>
-
-                <form id="form-gestion">
-                    <div class="form-group">
-                        <label for="order_id">Número de orden (TO-XXXXX) *</label>
-                        <input type="text" name="order_id" id="order_id" required placeholder="Ej: TO-12345" pattern="TO-[0-9]{5}">
+                <div class="reserva-form-container" style="margin-top:2rem;">
+                    <div class="form-header">
+                        <h2>Ver estado o cancelar reserva</h2>
+                        <p>Ingresa tu número de orden para consultar o cancelar</p>
                     </div>
-                    <button type="submit" class="btn">Ver estado</button>
-                    <button type="button" id="cancelar-reserva" class="btn btn-danger">Cancelar reserva</button>
-                </form>
+                    
+                    <div class="form-body">
+                        <form id="form-gestion">
+                            <div class="form-group">
+                                <label for="order_id">Número de orden (TO-XXXXX) *</label>
+                                <input type="text" name="order_id" id="order_id" required placeholder="Ej: TO-12345" pattern="TO-[0-9]{5}">
+                            </div>
+                            <div class="form-actions" style="justify-content:center;">
+                                <button type="submit" class="btn btn-secondary">Ver estado</button>
+                                <button type="button" id="cancelar-reserva" class="btn btn-danger">Cancelar reserva</button>
+                            </div>
+                        </form>
 
-                <div id="respuesta-gestion" style="margin-top:2rem;padding:1rem;border-radius:8px;"></div>
+                        <div id="respuesta-gestion" class="respuesta-mensaje" style="margin-top:2rem;padding:1rem;border-radius:8px;display:none;"></div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -126,16 +155,18 @@ $tipos = $stmt->fetchAll();
     <!-- Modal personalizado -->
     <div id="custom-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
         <div style="background:#fff;padding:2rem;border-radius:12px;width:90%;max-width:400px;text-align:center;">
-            <p id="modal-message" style="margin-bottom:1.5rem;"></p>
-            <div id="modal-buttons"></div>
+            <p id="modal-message" style="margin-bottom:1.5rem; color:var(--text-dark);"></p>
+            <div id="modal-buttons" style="display:flex; gap:1rem; justify-content:center;"></div>
         </div>
     </div>
 
     <script>
+        // Función mostrar mensaje mejorada
         function mostrarMensaje(div, bg, color, mensaje) {
             div.style.background = bg;
             div.style.color = color;
             div.innerHTML = mensaje;
+            div.style.display = 'block';
             div.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
@@ -153,7 +184,7 @@ $tipos = $stmt->fetchAll();
 
                 if (type === 'confirm') {
                     buttons.innerHTML = `
-                        <button id="cancelar-modal" style="padding:0.6rem 1.4rem; background:#ffffff; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:500; color:#333;">Cancelar</button>
+                        <button id="cancelar-modal" class="btn btn-secondary" style="padding:0.6rem 1.4rem;">Cancelar</button>
                         <button id="confirmar-modal" class="btn btn-reservar" style="padding:0.6rem 1.4rem;">Confirmar</button>
                     `;
                     document.getElementById('cancelar-modal').onclick = () => {
@@ -166,10 +197,12 @@ $tipos = $stmt->fetchAll();
                     };
                 } else if (type === 'prompt') {
                     buttons.innerHTML = `
-                        <input type="text" id="modal-input" style="width:100%; padding:0.8rem; margin-bottom:1rem; border-radius:6px; border:1px solid #ccc;">
-                        <div style="margin-top:1rem; display:flex; justify-content:center; gap:1rem;">
-                            <button id="cancelar-modal" style="padding:0.6rem 1.4rem; background:#ffffff; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:500; color:#333;">Cancelar</button>
-                            <button id="confirmar-modal" class="btn btn-reservar" style="padding:0.6rem 1.4rem;">Aceptar</button>
+                        <div style="width:100%; margin-bottom:1rem;">
+                            <input type="text" id="modal-input" style="width:100%; padding:0.8rem; border-radius:var(--radius-sm); border:2px solid #e0e0e0; font-family:inherit; font-size:inherit;">
+                        </div>
+                        <div style="display:flex; justify-content:center; gap:1rem;">
+                            <button id="cancelar-modal" class="btn btn-secondary">Cancelar</button>
+                            <button id="confirmar-modal" class="btn btn-reservar">Aceptar</button>
                         </div>
                     `;
                     document.getElementById('cancelar-modal').onclick = () => {
@@ -185,19 +218,34 @@ $tipos = $stmt->fetchAll();
             });
         }
 
-        // Precio dinámico
-        document.getElementById('tipo_evento_id').addEventListener('change', function() {
-            const selected = this.options[this.selectedIndex];
-            const precio = selected.dataset.precio;
-            const div = document.getElementById('precio-evento');
-            if (precio && precio > 0) {
-                div.innerHTML = `Precio base: C$${parseFloat(precio).toLocaleString('es-NI',{minimumFractionDigits:2})}`;
-            } else {
-                div.innerHTML = '';
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectTipo = document.getElementById('tipo_evento_id');
+            if (selectTipo) {
+                <?php if ($tipoSeleccionado): ?>
+                    setTimeout(function() {
+                        const selected = selectTipo.options[selectTipo.selectedIndex];
+                        const precio = selected.dataset.precio;
+                        const div = document.getElementById('precio-evento');
+                        if (precio && precio > 0) {
+                            div.innerHTML = `Precio base: C$${parseFloat(precio).toLocaleString('es-NI',{minimumFractionDigits:2})}`;
+                        }
+                    }, 100);
+                <?php endif; ?>
+
+                selectTipo.addEventListener('change', function() {
+                    const selected = this.options[this.selectedIndex];
+                    const precio = selected.dataset.precio;
+                    const div = document.getElementById('precio-evento');
+                    if (precio && precio > 0) {
+                        div.innerHTML = `Precio base: C$${parseFloat(precio).toLocaleString('es-NI',{minimumFractionDigits:2})}`;
+                    } else {
+                        div.innerHTML = '';
+                    }
+                });
             }
         });
 
-        // Validación fecha
+        // Validación fecha 
         document.getElementById('fecha_evento').addEventListener('change', function() {
             const fecha = this.value;
             const mensaje = document.getElementById('fecha-mensaje');
@@ -227,7 +275,7 @@ $tipos = $stmt->fetchAll();
             }
         });
 
-        // Calendario 
+        // Calendario
         document.addEventListener('DOMContentLoaded', function() {
             const el = document.getElementById('reserva-calendar');
             if (el) {
@@ -235,7 +283,7 @@ $tipos = $stmt->fetchAll();
                     initialView: 'dayGridMonth',
                     locale: 'es',
                     timeZone: 'America/Managua',
-                    height: 460,
+                    height: 'auto',
                     headerToolbar: {
                         left: 'prev,next today',
                         center: 'title',
@@ -276,12 +324,10 @@ $tipos = $stmt->fetchAll();
                 });
                 calendar.render();
 
-                // 🔹 Si viene fecha desde index.php
                 <?php if ($fechaPreseleccionada): ?>
                     calendar.gotoDate('<?= $fechaPreseleccionada ?>');
                     document.getElementById('fecha_evento').dispatchEvent(new Event('change'));
                 <?php endif; ?>
-
             }
         });
 
@@ -328,8 +374,6 @@ $tipos = $stmt->fetchAll();
         });
 
         // Gestión y cancelación 
-
-        // Ver estado de reserva
         document.getElementById('form-gestion').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -409,7 +453,7 @@ $tipos = $stmt->fetchAll();
                 });
         });
 
-        // Función para el modal de motivos
+        // Función para el modal de motivos - CORREGIDA
         async function showModalMotivo() {
             return new Promise((resolve) => {
                 const modal = document.createElement('div');
@@ -432,11 +476,12 @@ $tipos = $stmt->fetchAll();
                 content.style.width = '90%';
                 content.style.boxShadow = '0 8px 30px rgba(0,0,0,0.3)';
                 content.style.textAlign = 'center';
+                content.style.fontFamily = "'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
 
                 content.innerHTML = `
-                    <h3 style="margin-top:0; color:#7a4a3a;">Motivo de cancelación</h3>
-                    <p style="margin-bottom:1.5rem;">Selecciona el motivo principal:</p>
-                    <select id="motivo-select" style="width:100%; padding:0.8rem; margin-bottom:1rem; border-radius:6px; border:1px solid #ccc;">
+                    <h3 style="margin-top:0; color:#7a4a3a; font-family:inherit;">Motivo de cancelación</h3>
+                    <p style="margin-bottom:1.5rem; font-family:inherit;">Selecciona el motivo principal:</p>
+                    <select id="motivo-select" style="width:100%; padding:0.8rem; margin-bottom:1rem; border-radius:6px; border:1px solid #ccc; font-family:inherit; font-size:inherit;">
                         <option value="">Selecciona un motivo...</option>
                         <option value="Cambio de planes">Cambio de planes</option>
                         <option value="Fecha no disponible para mí">Fecha no disponible para mí</option>
@@ -444,10 +489,10 @@ $tipos = $stmt->fetchAll();
                         <option value="Encontré otra opción">Encontré otra opción</option>
                         <option value="Otro">Otro (especificar abajo)</option>
                     </select>
-                    <textarea id="motivo-otro" placeholder="Especifica aquí si elegiste 'Otro'" style="width:100%; height:80px; padding:0.8rem; border-radius:6px; border:1px solid #ccc; display:none;"></textarea>
+                    <textarea id="motivo-otro" placeholder="Especifica aquí si elegiste 'Otro'" style="width:100%; height:80px; padding:0.8rem; border-radius:6px; border:1px solid #ccc; display:none; font-family:inherit; font-size:inherit; resize:vertical;"></textarea>
                     <div style="margin-top:1.5rem; text-align:right; display:flex; justify-content:flex-end; gap:1rem;">
-                        <button id="cancelar-modal" style="padding:0.6rem 1.4rem; background:#ffffff; border:1px solid #ccc; border-radius:6px; cursor:pointer; font-weight:500; color:#333;">Cancelar</button>
-                        <button id="confirmar-modal" class="btn btn-reservar" style="padding:0.6rem 1.4rem;">Confirmar</button>
+                        <button id="cancelar-modal" class="btn btn-secondary" style="padding:0.6rem 1.4rem; font-family:inherit;">Cancelar</button>
+                        <button id="confirmar-modal" class="btn btn-reservar" style="padding:0.6rem 1.4rem; font-family:inherit;">Confirmar</button>
                     </div>
                 `;
 

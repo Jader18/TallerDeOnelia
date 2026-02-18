@@ -1,13 +1,18 @@
 :root {
     --primary: #7a4a3a;
+    --primary-dark: #5e3a2d;
     --secondary: #c89b7b;
+    --secondary-dark: #b37c5e;
     --bg-light: #faf7f5;
     --bg-dark: #3f2a23;
     --text-dark: #2d2d2d;
     --text-light: #f1e6df;
     --shadow-sm: 0 2px 10px rgba(0,0,0,0.08);
     --shadow-md: 0 6px 20px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
     --radius: 12px;
+    --radius-sm: 8px;
+    --transition: all 0.3s ease;
 }
 
 * {
@@ -21,20 +26,21 @@ html {
 }
 
 body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
     color: var(--text-dark);
     background: var(--bg-light);
 }
 
-/* Contenedor */
+/* Contenedor mejorado */
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+    width: 100%;
 }
 
-/* Header */
+/* Header (se mantiene igual, funciona bien) */
 header {
     background: rgba(255, 255, 255, 0.95);
     color: var(--primary);
@@ -70,13 +76,7 @@ header .container {
     white-space: nowrap;
 }
 
-@media (max-width: 768px) {
-    .logo a { gap: 0.8rem; }
-    .logo img { max-height: 45px; }
-    .logo h1 { font-size: 1.3rem; }
-}
-
-/* Menú hamburguesa */
+/* Menú hamburguesa mejorado para móvil */
 .nav-menu { position: relative; }
 
 .menu-checkbox { display: none; }
@@ -87,6 +87,12 @@ header .container {
     color: var(--primary);
     cursor: pointer;
     padding: 0.5rem;
+    transition: var(--transition);
+}
+
+.menu-toggle-label:hover {
+    color: var(--secondary);
+    transform: scale(1.1);
 }
 
 .nav-list {
@@ -101,16 +107,33 @@ header .container {
     color: var(--primary);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.3s;
+    transition: var(--transition);
+    position: relative;
 }
 
-.nav-list li a:hover,
-.nav-list li a:focus {
-    color: var(--secondary);
+.nav-list li a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--secondary);
+    transition: var(--transition);
 }
 
+.nav-list li a:hover::after,
+.nav-list li a:focus::after {
+    width: 100%;
+}
+
+/* ========== MEJORAS PARA MÓVIL ========== */
 @media (max-width: 768px) {
-    .menu-toggle-label { display: block; }
+    .menu-toggle-label { 
+        display: block; 
+        z-index: 1001;
+    }
+    
     .nav-list {
         display: none;
         position: absolute;
@@ -118,281 +141,279 @@ header .container {
         right: 0;
         background: rgba(255, 255, 255, 0.98);
         flex-direction: column;
-        width: 220px;
-        box-shadow: var(--shadow-md);
+        width: 280px;
+        box-shadow: var(--shadow-lg);
         border-radius: 0 0 var(--radius) var(--radius);
         overflow: hidden;
+        animation: slideDown 0.3s ease;
     }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     #menu-toggle:checked ~ .nav-list {
         display: flex;
     }
+    
     .nav-list li {
         width: 100%;
     }
+    
     .nav-list li a {
         display: block;
         padding: 1rem 1.5rem;
         text-align: right;
         border-bottom: 1px solid #eee;
     }
+    
+    .nav-list li a::after {
+        display: none;
+    }
+    
+    .nav-list li a:hover {
+        background: var(--bg-light);
+        padding-left: 2rem;
+    }
+    
     .nav-list li:last-child a { border-bottom: none; }
+    
+    /* Ajustes hero para móvil */
+    .hero h1 { 
+        font-size: 2rem; 
+        line-height: 1.2;
+    }
+    
+    .hero p {
+        font-size: 1rem;
+        padding: 0 15px;
+    }
+    
+    /* Carrusel móvil */
+    .mySwiper { 
+        aspect-ratio: 4/3; 
+        max-height: 280px; 
+    }
+    
+    /* Grid de eventos */
+    .arreglos-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 10px;
+    }
+    
+    .arreglo-card img { 
+        aspect-ratio: 16/9; 
+    }
+    
+    /* Footer móvil */
+    footer .container { 
+        grid-template-columns: 1fr; 
+        text-align: center;
+    }
+    
+    .footer-brand {
+        margin-bottom: 1.5rem;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
 }
 
-/* Links globales */
-a {
-    text-decoration: none;
-    color: inherit;
+/* Ajustes para móviles pequeños */
+@media (max-width: 480px) {
+    .hero h1 { 
+        font-size: 1.8rem; 
+    }
+    
+    .container {
+        padding: 0 15px;
+    }
+    
+    .arreglo-info {
+        padding: 1rem;
+    }
+    
+    .arreglo-info h3 {
+        font-size: 1.3rem;
+    }
+    
+    .precio {
+        font-size: 1.1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 0.8rem 1rem;
+    }
 }
 
-a:hover,
-a:focus {
-    color: var(--secondary);
+/* ========== MEJORAS PARA EL FORMULARIO DE RESERVA ========== */
+
+/* Contenedor del formulario */
+.reserva-form-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
 }
 
-/* Hero */
-.hero {
+/* Encabezado del formulario */
+.form-header {
+    background: var(--primary);
+    color: white;
+    padding: 1.5rem 2rem;
     text-align: center;
-    padding: 2rem 0 1rem;
 }
 
-.hero h1 {
-    color: var(--primary);
-    font-size: 2.8rem;
+.form-header h2 {
+    font-size: 1.8rem;
     margin-bottom: 0.5rem;
 }
 
-/* Carrusel */
-.carrusel {
-    max-width: 1000px;
-    margin: 0 auto 3rem;
-    overflow: hidden;
+.form-header p {
+    opacity: 0.9;
+    font-size: 1rem;
 }
 
-.mySwiper {
-    width: 100%;
-    aspect-ratio: 16/9;
-    max-height: 380px;
-    border-radius: var(--radius);
+/* Cuerpo del formulario */
+.form-body {
+    padding: 2rem;
 }
 
-.swiper-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Tipos de eventos */
-.arreglos-grid {
+/* Grid del formulario */
+.form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-.arreglo-card {
-    background: white;
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    transition: transform 0.3s;
-    height: 100%;
-    text-decoration: none;
-    color: inherit;
-}
-
-.arreglo-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-}
-
-.arreglo-card img {
-    width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-}
-
-.arreglo-info {
-    padding: 1.5rem;
-    text-align: center;
-}
-
-.arreglo-info h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.8rem;
-    color: var(--primary);
-}
-
-.precio {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--secondary);
-}
-
-/* Calendario */
-.calendario {
-    background: #f3eeeb;
-    padding: 4rem 0;
-}
-
-#calendar {
-    max-width: 1000px;
-    margin: 0 auto;
-    background: white;
-    padding: 1.5rem;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-}
-
-/* Evento detalle */
-.evento-detalle .foto-principal {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: var(--radius);
-    margin-bottom: 2rem;
-}
-
-.galeria-adicional {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    margin-bottom: 2rem;
 }
 
-.foto-card {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
+.form-group {
+    margin-bottom: 1.5rem;
 }
 
-.foto-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+.form-group.full-width {
+    grid-column: span 2;
 }
 
-.foto-card img {
+/* Estilos para etiquetas */
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Estilos para inputs, selects y textareas */
+.form-group input,
+.form-group select,
+.form-group textarea {
     width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    transition: var(--transition);
+    background: #fff;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: var(--secondary);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(122, 74, 58, 0.1);
+}
+
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+    border-color: #dc3545;
+}
+
+/* Estilo para textarea */
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Mensajes de error */
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
     display: block;
 }
 
-/* Botón de reserva destacado */
-.info .btn {
-    display: inline-block;
-    background: var(--secondary);
-    color: white;
-    padding: 1rem 2.5rem;
-    border-radius: var(--radius);
-    font-size: 1.2rem;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(200, 155, 123, 0.3);
-    margin-top: 1.5rem;
-    border: none;
+/* Campo de fecha mejorado */
+.form-group input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0.8rem 1rem;
+    background: #fff;
     cursor: pointer;
 }
 
-.info .btn:hover,
-.info .btn:focus {
-    background: #b37c5e;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(200, 155, 123, 0.4);
-}
-
-.info .btn:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 15px rgba(200, 155, 123, 0.3);
-}
-
-/* Footer */
-footer {
-    background: var(--bg-dark);
-    color: var(--text-light);
-    padding: 3rem 0 1.5rem;
-}
-
-footer .container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-}
-
-.footer-brand {
-    text-align: center;
-}
-
-.footer-logo {
-    max-height: 80px;
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
     width: auto;
-    display: block;
-    margin: 0 auto 1rem;
-    object-fit: contain;
 }
 
-.footer-brand h2 {
-    margin: 0.5rem 0;
-    font-size: 1.5rem;
+/* Select personalizado */
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a4a3a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
 }
 
-.footer-brand p {
-    margin: 0;
-    font-size: 0.95rem;
-    opacity: 0.9;
+/* Calendario dentro del formulario */
+.calendar-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--bg-light);
+    border-radius: var(--radius);
+    border: 2px dashed var(--secondary);
 }
 
-footer ul {
-    list-style: none;
-    padding: 0;
-}
-
-footer a {
-    color: var(--text-light);
-    text-decoration: none;
-}
-
-footer a:hover {
-    color: var(--secondary);
-}
-
-.copyright {
+.calendar-section h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
     text-align: center;
-    padding-top: 2rem;
-    border-top: 1px solid #5a3f36;
-    margin-top: 2rem;
-    font-size: 0.9rem;
 }
 
-/* Social links */
-.social-links {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.social-links a {
-    width: 40px;
-    height: 40px;
-    background-color: #fff;
-    color: #222;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: 0.3s ease;
-    font-size: 18px;
-}
-
-.social-links a:hover {
-    background-color: #e91e63;
-    color: #fff;
-}
-
-/* Calendario dentro del formulario de reserva */
 #reserva-calendar {
     max-width: 100%;
     margin: 1.5rem auto;
@@ -409,93 +430,1031 @@ footer a:hover {
 #reserva-calendar .fc-daygrid-day.available {
     background: #d4edda !important;
     border: 2px solid #28a745 !important;
+    cursor: pointer;
+}
+
+#reserva-calendar .fc-daygrid-day.available:hover {
+    background: #c3e6cb !important;
+    transform: scale(0.98);
 }
 
 #reserva-calendar .fc-daygrid-day.not-available {
     background: #f8d7da !important;
     border: 2px solid #dc3545 !important;
+    opacity: 0.7;
 }
 
 #reserva-calendar .fc-button {
     background: var(--primary);
     border: none;
     color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
 }
 
 #reserva-calendar .fc-button:hover {
-    background: #5e3a2d;
+    background: var(--primary-dark);
+    transform: translateY(-2px);
 }
 
-/* Botones del formulario de reserva */
+/* Acciones del formulario */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+/* Botones mejorados - ÚNICA DEFINICIÓN */
 .btn {
     display: inline-block;
     padding: 0.9rem 2rem;
     border-radius: var(--radius);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 160px;
+    color: white !important;
 }
 
 .btn-reservar {
-    background: #8f6253;
+    background: var(--primary);
     color: white;
-    box-shadow: 0 4px 15px rgba(131, 86, 54, 0.3);
+    box-shadow: 0 4px 15px rgba(122, 74, 58, 0.3);
 }
 
-.btn-reservar:hover {
-    background: #5e3a2d;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(200, 155, 123, 0.4);
+.btn-reservar:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(122, 74, 58, 0.4);
 }
 
 .btn-danger {
     background: #dc3545;
     color: white;
-    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
     background: #c82333;
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--secondary-dark);
+    transform: translateY(-3px);
 }
 
 .btn:disabled {
     background: #ccc;
     cursor: not-allowed;
     box-shadow: none;
+    opacity: 0.7;
 }
 
-/* Tipo de letra para textarea */
-textarea {
-    font-family: inherit;
-    font-size: inherit;
+.btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
-/* Alineación perfecta en sección de redes sociales del footer */
+/* Responsive para formulario */
+@media (max-width: 768px) {
+    .form-body {
+        padding: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .btn {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .calendar-section {
+        padding: 1rem;
+    }
+    
+    .form-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .form-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    #reserva-calendar .fc-toolbar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    #reserva-calendar .fc-toolbar-title {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-body {
+        padding: 1rem;
+    }
+    
+    .form-group label {
+        font-size: 0.9rem;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 0.7rem;
+        font-size: 0.95rem;
+    }
+    
+    .calendar-section h3 {
+        font-size: 1.1rem;
+    }
+}
+
+/* ========== MEJORAS ADICIONALES PARA EL RESTO DEL SITIO ========== */
+
+/* Hero mejorado */
+.hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    background: linear-gradient(135deg, #fff 0%, var(--bg-light) 100%);
+}
+
+.hero h1 {
+    color: var(--primary);
+    font-size: 2.8rem;
+    margin-bottom: 0.5rem;
+    animation: fadeInUp 0.8s ease;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    opacity: 0.8;
+    max-width: 600px;
+    margin: 0 auto;
+    animation: fadeInUp 1s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Carrusel */
+.carrusel {
+    max-width: 1000px;
+    margin: 0 auto 3rem;
+    overflow: hidden;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+}
+
+.mySwiper {
+    width: 100%;
+    aspect-ratio: 16/9;
+    max-height: 380px;
+}
+
+.swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.swiper-slide:hover img {
+    transform: scale(1.05);
+}
+
+/* Tarjetas de eventos mejoradas */
+.arreglos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.arreglo-card {
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+}
+
+.arreglo-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+}
+
+.arreglo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transform: scaleX(0);
+    transition: var(--transition);
+}
+
+.arreglo-card:hover::before {
+    transform: scaleX(1);
+}
+
+.arreglo-card img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.arreglo-card:hover img {
+    transform: scale(1.05);
+}
+
+.arreglo-info {
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    background: white;
+}
+
+.arreglo-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+    color: var(--primary);
+}
+
+.precio {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--secondary);
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    background: var(--bg-light);
+    border-radius: 50px;
+}
+
+/* Calendario principal */
+.calendario {
+    background: linear-gradient(135deg, #f3eeeb 0%, #e8dfd9 100%);
+    padding: 4rem 0;
+}
+
+#calendar {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Galería de eventos */
+.evento-detalle .foto-principal {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.galeria-adicional {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.foto-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    position: relative;
+}
+
+.foto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.foto-card img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+    transition: var(--transition);
+}
+
+.foto-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Footer mejorado */
+footer {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 4rem 0 2rem;
+    position: relative;
+}
+
+footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+}
+
+footer .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+}
+
+.footer-brand {
+    text-align: center;
+}
+
+.footer-logo {
+    max-height: 100px;
+    width: auto;
+    display: block;
+    margin: 0 auto 1.5rem;
+    object-fit: contain;
+    transition: var(--transition);
+}
+
+.footer-logo:hover {
+    transform: rotate(5deg) scale(1.05);
+}
+
+.footer-brand h2 {
+    margin: 0.5rem 0;
+    font-size: 1.5rem;
+    color: var(--secondary);
+}
+
+.footer-brand p {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+footer h3 {
+    color: var(--secondary);
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+footer h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: var(--secondary);
+}
+
+@media (max-width: 768px) {
+    footer h3::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+footer ul {
+    list-style: none;
+    padding: 0;
+}
+
+footer ul li {
+    margin-bottom: 0.8rem;
+}
+
+footer a {
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition);
+    display: inline-block;
+}
+
+footer a:hover {
+    color: var(--secondary);
+    transform: translateX(5px);
+}
+
+/* Redes sociales en footer */
 .redes-sociales {
     text-align: center;          
 }
 
 .redes-sociales h2 {
-    margin-bottom: 1rem;        
+    margin-bottom: 1.5rem;        
     text-align: center;
+    color: var(--secondary);
 }
 
 .social-links {
     display: flex;
     justify-content: center;     
-    gap: 15px;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
+.social-links a {
+    width: 45px;
+    height: 45px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition);
+    font-size: 1.2rem;
+    border: 2px solid transparent;
+}
 
-/* Responsive */
+.social-links a:hover {
+    background-color: var(--secondary);
+    color: white;
+    transform: translateY(-5px) rotate(360deg);
+    border-color: white;
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 3rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Eliminar azul y subrayado de todos los enlaces */
+a, 
+a:link, 
+a:visited, 
+a:hover, 
+a:active,
+a:focus {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+/* Específico para enlaces dentro del footer si acaso */
+footer a,
+footer a:link,
+footer a:visited,
+footer a:hover,
+footer a:active {
+    color: var(--text-light) !important;
+    text-decoration: none !important;
+}
+
+/* Para enlaces en el header/nav */
+.nav-list li a,
+.nav-list li a:link,
+.nav-list li a:visited {
+    color: var(--primary) !important;
+    text-decoration: none !important;
+}
+
+/* ========== MEJORAS FOOTER PARA MÓVIL ========== */
+footer {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 3rem 0 1.5rem;
+    position: relative;
+}
+
+footer .footer-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+/* Marca */
+.footer-brand {
+    text-align: left;
+}
+
+.footer-logo {
+    max-height: 80px;
+    width: auto;
+    display: block;
+    margin: 0 0 1rem 0;
+    object-fit: contain;
+}
+
+.footer-brand h2 {
+    margin: 0.5rem 0;
+    font-size: 1.5rem;
+    color: var(--secondary);
+}
+
+.footer-brand p {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+/* Sección contacto */
+.contacto h2,
+.redes-sociales h2 {
+    color: var(--secondary);
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.contacto h2::after,
+.redes-sociales h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--secondary);
+}
+
+.contacto-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.contacto-lista li {
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.contacto-lista li strong {
+    color: var(--secondary);
+    min-width: 80px;
+    font-weight: 600;
+}
+
+/* Redes sociales */
+.redes-sociales {
+    text-align: left;
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.social-links a {
+    width: 45px;
+    height: 45px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    border: 2px solid transparent;
+}
+
+.social-links a:hover {
+    background-color: var(--secondary);
+    color: white;
+    transform: translateY(-5px);
+    border-color: white;
+}
+
+/* Footer bottom */
+.footer-bottom {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.footer-bottom p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.footer-bottom a {
+    color: #aaa;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-bottom a:hover {
+    color: var(--secondary);
+}
+
+/* ========== RESPONSIVE FOOTER ========== */
+@media (max-width: 992px) {
+    footer .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .footer-brand {
+        grid-column: span 2;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .footer-logo {
+        margin: 0 auto 1rem auto;
+    }
+}
+
 @media (max-width: 768px) {
-    .hero h1 { font-size: 2.2rem; }
-    .mySwiper { aspect-ratio: 4/3; max-height: 280px; }
-    .arreglo-card img { aspect-ratio: 4/3; }
-    footer .container { grid-template-columns: 1fr; }
+    footer {
+        padding: 2.5rem 0 1rem;
+    }
+    
+    footer .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .footer-brand {
+        grid-column: span 1;
+        text-align: center;
+    }
+    
+    .footer-logo {
+        max-height: 70px;
+        margin: 0 auto 1rem auto;
+    }
+    
+    .footer-brand h2 {
+        font-size: 1.3rem;
+    }
+    
+    .contacto,
+    .redes-sociales {
+        text-align: center;
+    }
+    
+    .contacto h2::after,
+    .redes-sociales h2::after {
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+    }
+    
+    .contacto-lista li {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.2rem;
+    }
+    
+    .contacto-lista li strong {
+        min-width: auto;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .footer-bottom p {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    
+    .footer-bottom span {
+        margin-left: 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .social-links a {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .contacto-lista li {
+        font-size: 0.9rem;
+    }
+}
+
+/* ========== MEJORAS HEADER PARA MÓVIL ========== */
+header {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    padding: 0.5rem 0;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo a {
+    display: flex;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.logo a:hover {
+    opacity: 0.8;
+}
+
+.logo img {
+    max-height: 60px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo img:hover {
+    transform: scale(1.05);
+}
+
+/* Navegación */
+nav ul {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+nav ul li a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--secondary);
+    transition: width 0.3s ease;
+}
+
+nav ul li a:hover::after {
+    width: 100%;
+}
+
+nav ul li a:hover {
+    color: var(--secondary);
+}
+
+/* ========== RESPONSIVE HEADER ========== */
+@media (max-width: 768px) {
+    header {
+        padding: 0.4rem 0;
+    }
+    
+    .logo img {
+        max-height: 45px;
+    }
+    
+    nav ul {
+        gap: 1rem;
+    }
+    
+    nav ul li a {
+        font-size: 0.9rem;
+        padding: 0.4rem 0;
+    }
+}
+
+@media (max-width: 576px) {
+    header .container {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .logo img {
+        max-height: 50px;
+    }
+    
+    nav ul {
+        gap: 1.2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    nav ul li a {
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 380px) {
+    nav ul {
+        gap: 0.8rem;
+    }
+    
+    nav ul li a {
+        font-size: 0.8rem;
+    }
+}
+
+/* ========== ESTILOS ADMIN (header, botones, etc.) ========== */
+.admin-header {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1000;
+    padding: 12px 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.admin-title {
+    margin: 0;
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.user-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #555;
+    font-size: 1rem;
+}
+
+.btn-action {
+    padding: 0.6rem 1.4rem;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    min-width: 140px;
+    text-align: center;
+    color: white !important;
+}
+
+.btn-back {
+    background: var(--primary);
+    color: white !important;
+}
+
+.btn-back:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-logout {
+    background: #dc3545;
+    color: white !important;
+}
+
+.btn-logout:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+/* Forzar blanco en TODOS los botones del sitio (incluyendo .btn, .btn-reservar, etc.) */
+.btn,
+.btn-reservar,
+.btn-danger,
+.btn-secondary,
+.btn-action,
+.btn-back,
+.btn-logout,
+button[type="submit"],
+input[type="submit"] {
+    color: white !important;
+}
+
+/* Responsive admin */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 12px 16px;
+    }
+    
+    .user-controls {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+}
+
+button, 
+.btn, 
+.btn-reservar, 
+.btn-danger, 
+.btn-secondary, 
+.btn-action, 
+.btn-back, 
+.btn-logout,
+input[type="submit"],
+button[type="submit"] {
+    color: white !important;
+}
+
+form button,
+form .btn,
+form input[type="submit"] {
+    color: white !important;
+}
+
+a.btn,
+a.btn-reservar,
+a.btn-danger,
+a.btn-secondary,
+a.btn-action,
+a.btn-back,
+a.btn-logout {
+    color: white !important;
+}
+
+.btn:disabled,
+button:disabled {
+    color: #666 !important; 
+    opacity: 0.7;
 }

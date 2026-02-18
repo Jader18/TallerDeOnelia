@@ -1,26 +1,22 @@
 <?php
 session_start();
 
-// Forzar HTTPS (comentar en desarrollo local si no tienes SSL)
 if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'on') {
     header("Location: https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
     exit;
 }
 
-// Headers de seguridad
+// Headers de seguridad estrictos
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
 header("X-XSS-Protection: 1; mode=block");
 header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;");
 
-// Configuración de la base de datos
 require_once '../config/database.php';
 
-// Configuración de intentos fallidos (por IP)
 $max_attempts = 5;
 $lockout_time = 15 * 60; // 15 minutos
 
-// Generar o recuperar token CSRF
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -28,12 +24,20 @@ $csrf_token = $_SESSION['csrf_token'];
 
 // Verificar si ya está logueado
 if (isset($_SESSION['usuario_id'])) {
-    header("Location: disponibilidad.php");
+    header("Location: dashboard.php");
     exit;
 }
 
-// Procesar formulario
+// Mensajes desde GET
 $error = '';
+if (isset($_GET['expired']) && $_GET['expired'] == 1) {
+    $error = 'Sesión expirada por inactividad. Inicia sesión nuevamente.';
+}
+if (isset($_GET['logout']) && $_GET['logout'] == 1) {
+    $error = 'Sesión cerrada correctamente.';
+}
+
+// Procesar formulario
 $intentos = 0;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -62,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$error && filter_var($email, FILTER_VALIDATE_EMAIL)) {
             try {
-                // Consulta ajustada 
                 $stmt = $pdo->prepare("
                     SELECT u.id, u.nombre, u.email, u.password_hash, u.rol_id, r.nombre AS rol_nombre 
                     FROM usuarios u
@@ -87,8 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     unset($_SESSION[$attempt_key]);
                     unset($_SESSION[$lockout_key]);
 
-                    // Redirigir al panel
-                    header("Location: disponibilidad.php");
+                    // Regenerar token CSRF SOLO después de login exitoso
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
+                    // Redirigir al dashboard
+                    header("Location: dashboard.php");
                     exit;
                 } else {
                     $intentos++;
@@ -106,43 +112,110 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Ingresa un correo electrónico válido.';
         }
     }
-
-    // Regenerar token CSRF después de POST
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin - El Taller de Onelia</title>
     <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        body {
+            background: linear-gradient(135deg, #faf7f5 0%, #e8dfd9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 1rem;
+        }
+
         .login-container {
             max-width: 420px;
-            margin: 80px auto;
+            width: 100%;
+            margin: 0 auto;
             padding: 2.5rem;
             background: white;
             border-radius: var(--radius);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-lg);
+            animation: fadeInUp 0.5s ease;
+            border: 1px solid rgba(200, 155, 123, 0.2);
         }
 
-        .login-title {
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
             text-align: center;
-            color: var(--primary);
             margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .login-header .brand-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .error-msg, .success-msg {
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            animation: slideIn 0.3s ease;
         }
 
         .error-msg {
             background: #f8d7da;
             color: #721c24;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-            text-align: center;
+            border-left: 4px solid #dc3545;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .error-msg i, .success-msg i {
+            font-size: 1.1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .form-group {
@@ -152,15 +225,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--radius-sm);
             font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(122, 74, 58, 0.1);
+        }
+
+        /* Contenedor de contraseña con icono de mostrar */
+        .password-container {
+            position: relative;
+        }
+
+        .password-container input {
+            padding-right: 3rem;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            transition: var(--transition);
+            background: transparent;
+            border: none;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
+        .toggle-password:focus {
+            outline: 2px solid var(--primary);
+            border-radius: 4px;
+        }
+
+        /* Intentos restantes */
+        .attempts-info {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+
+        .attempts-info i {
+            color: var(--primary);
+            margin-right: 0.3rem;
         }
 
         .btn-login {
@@ -173,11 +300,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .btn-login:hover {
-            background: #5e3a2d;
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(122, 74, 58, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login i {
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .back-link a:hover {
+            color: var(--secondary);
+            transform: translateX(-3px);
+        }
+
+        .back-link a i {
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .back-link a:hover i {
+            transform: translateX(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.8rem;
+            }
+
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .login-header .brand-icon {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
@@ -185,33 +370,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
     <div class="login-container">
-        <h1 class="login-title">Panel de Administración</h1>
+        <div class="login-header">
+            <div class="brand-icon">
+                <i class="fas fa-palette"></i>
+            </div>
+            <h1>Panel de Administración</h1>
+            <p>El Taller de Onelia</p>
+        </div>
 
         <?php if ($error): ?>
-            <div class="error-msg"><?= htmlspecialchars($error) ?></div>
+            <div class="error-msg">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= htmlspecialchars($error) ?>
+            </div>
+        <?php elseif (isset($_GET['logout']) && $_GET['logout'] == 1): ?>
+            <div class="success-msg">
+                <i class="fas fa-check-circle"></i>
+                Sesión cerrada correctamente.
+            </div>
         <?php endif; ?>
 
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
 
             <div class="form-group">
-                <label for="email">Correo electrónico</label>
-                <input type="email" id="email" name="email" required autocomplete="email" autofocus>
+                <label for="email">
+                    <i class="fas fa-envelope" style="margin-right: 0.3rem;"></i>
+                    Correo electrónico
+                </label>
+                <input type="email" id="email" name="email" required autocomplete="email" autofocus 
+                       placeholder="usuario@ejemplo.com">
             </div>
 
             <div class="form-group">
-                <label for="password">Contraseña</label>
-                <input type="password" id="password" name="password" required autocomplete="current-password">
+                <label for="password">
+                    <i class="fas fa-lock" style="margin-right: 0.3rem;"></i>
+                    Contraseña
+                </label>
+                <div class="password-container">
+                    <input type="password" id="password" name="password" required autocomplete="current-password"
+                           placeholder="••••••••">
+                    <button type="button" class="toggle-password" onclick="togglePassword()" aria-label="Mostrar contraseña">
+                        <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                    </button>
+                </div>
+                <?php if ($intentos > 0): ?>
+                    <div class="attempts-info">
+                        <i class="fas fa-info-circle"></i>
+                        Intentos restantes: <?= $max_attempts - $intentos ?>
+                    </div>
+                <?php endif; ?>
             </div>
 
-            <button type="submit" class="btn-login">Iniciar Sesión</button>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt"></i>
+                Iniciar Sesión
+            </button>
 
-            <p style="text-align: center; margin-top: 1.5rem;">
-                <a href="../index.php" style="color: var(--primary); text-decoration: none; font-weight: 500;">← Volver a la página principal</a>
-            </p>
+            <div class="back-link">
+                <a href="../index.php">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver a la página principal
+                </a>
+            </div>
         </form>
     </div>
 
-</body>
+    <script>
+        // Función para mostrar/ocultar contraseña
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('togglePasswordIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
 
+        // También permitir mostrar/ocultar con Enter en el botón (accesibilidad)
+        document.querySelector('.toggle-password').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                togglePassword();
+            }
+        });
+    </script>
+
+</body>
 </html>
