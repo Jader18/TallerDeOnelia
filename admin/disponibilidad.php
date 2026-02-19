@@ -22,7 +22,7 @@ if (!isset($_SESSION['initiated'])) {
     $_SESSION['initiated'] = true;
 }
 
-// Protección real
+
 if (!isset($_SESSION['usuario_id']) || 
     !isset($_SESSION['rol_nombre']) || 
     !in_array($_SESSION['rol_nombre'], ['superadmin', 'admin'])) {
@@ -38,14 +38,12 @@ if (!isset($_SESSION['usuario_id']) ||
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Panel Admin - Disponibilidad</title>
 
-    <!-- Carga main.css (ajusta la ruta si es necesario) -->
     <link rel="stylesheet" href="../assets/css/main.css">
 
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
     <style>
-        /* Estilos mejorados sin afectar funcionalidad */
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             margin: 0;
@@ -93,7 +91,7 @@ if (!isset($_SESSION['usuario_id']) ||
             margin: 0 auto;
         }
 
-        /* Calendario mejorado */
+        /* Calendario */
         #calendar {
             max-width: 100%;
             margin: 2rem auto;
@@ -104,7 +102,7 @@ if (!isset($_SESSION['usuario_id']) ||
             border: 1px solid rgba(200, 155, 123, 0.1);
         }
 
-        /* Toolbar mejorado */
+        /* Toolbar */
         .fc .fc-toolbar {
             padding: 0.5rem 0;
             flex-wrap: wrap;
@@ -118,7 +116,7 @@ if (!isset($_SESSION['usuario_id']) ||
             font-weight: 600;
         }
 
-        /* Botones del calendario mejorados */
+        /* Botones del calendario */
         .fc-toolbar .fc-button,
         .fc .fc-button,
         .fc .fc-button-primary,
@@ -159,7 +157,7 @@ if (!isset($_SESSION['usuario_id']) ||
             box-shadow: none !important;
         }
 
-        /* Días del calendario mejorados */
+        /* Días del calendario */
         .fc-daygrid-day {
             transition: var(--transition);
             cursor: pointer;
@@ -175,7 +173,7 @@ if (!isset($_SESSION['usuario_id']) ||
             box-shadow: inset 0 0 0 2px #ffc107;
         }
 
-        /* Estados mejorados */
+        /* Estados */
         .disponible {
             background-color: #d4edda !important;
             border: 2px solid #28a745 !important;
@@ -230,7 +228,7 @@ if (!isset($_SESSION['usuario_id']) ||
             opacity: 0.7;
         }
 
-        /* Leyenda mejorada */
+        /* Leyenda */
         .legend {
             display: flex;
             flex-wrap: wrap;
@@ -282,7 +280,7 @@ if (!isset($_SESSION['usuario_id']) ||
             opacity: 0.7;
         }
 
-        /* Mensaje flotante mejorado */
+        /* Mensaje flotante */
         .mensaje-flotante {
             position: fixed;
             top: 20px;
@@ -437,8 +435,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const mensajeTexto = document.getElementById('mensaje-texto');
     const calendarEl = document.getElementById('calendar');
 
-    let ultimaAccion = null; // Variable para evitar doble mensaje
-    let ultimaFecha = null;  // Variable para evitar doble mensaje
+    let ultimaAccion = null; 
+    let ultimaFecha = null;  
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
@@ -467,7 +465,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             let accion, mensaje, tipoMensaje = 'info';
 
-            // Evitar doble clic en la misma fecha
             if (ultimaFecha === fecha && ultimaAccion) {
                 return;
             }
@@ -501,7 +498,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Guardar última acción para evitar duplicados
             ultimaFecha = fecha;
             ultimaAccion = accion;
 

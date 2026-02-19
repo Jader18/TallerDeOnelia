@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('America/Managua');
 require_once '../config/database.php';
 
 // Protección + timeout de 20 min
@@ -22,9 +23,11 @@ if (!isset($_SESSION['initiated'])) {
     $_SESSION['initiated'] = true;
 }
 
-if (!isset($_SESSION['usuario_id']) || 
-    !isset($_SESSION['rol_nombre']) || 
-    !in_array($_SESSION['rol_nombre'], ['superadmin', 'admin'])) {
+if (
+    !isset($_SESSION['usuario_id']) ||
+    !isset($_SESSION['rol_nombre']) ||
+    !in_array($_SESSION['rol_nombre'], ['superadmin', 'admin', 'editor'])
+) {
     header("Location: login.php");
     exit;
 }
@@ -40,7 +43,7 @@ try {
 
     // 2. Reservas de hoy
     $hoy = date('Y-m-d');
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservas WHERE fecha_evento = ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservas WHERE fecha_evento = ? AND estado != 'cancelada'");
     $stmt->execute([$hoy]);
     $reservas_hoy = $stmt->fetchColumn() ?: 0;
 
@@ -63,7 +66,6 @@ try {
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM clientes WHERE activo = 1");
     $stmt->execute();
     $clientes_activos = $stmt->fetchColumn() ?: 0;
-
 } catch (PDOException $e) {
     error_log("Error en estadísticas dashboard: " . $e->getMessage());
     $reservas_pendientes = $reservas_hoy = $tipos_activos = $clientes_activos = 0;
@@ -73,6 +75,7 @@ try {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -113,7 +116,7 @@ try {
         }
 
         .user-badge {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             padding: 0.5rem 1.5rem;
             border-radius: 50px;
             font-weight: 600;
@@ -127,7 +130,7 @@ try {
         }
 
         .user-badge.superadmin {
-            background: rgba(255,215,0,0.3);
+            background: rgba(255, 215, 0, 0.3);
             color: #ffd700;
         }
 
@@ -453,140 +456,147 @@ try {
         }
     </style>
 </head>
+
 <body>
 
-<?php include 'admin_header.php'; ?>
+    <?php include 'admin_header.php'; ?>
 
-<div class="dashboard-container container">
-    
-    <!-- Header de bienvenida personalizado -->
-    <div class="welcome-header">
-        <div class="welcome-text">
-            <h2>¡Bienvenido(a), <?= htmlspecialchars($_SESSION['usuario_nombre']) ?>!</h2>
-            <p><?= strftime('%A, %d de %B de %Y') ?></p>
-        </div>
-        <div class="user-badge <?= $is_superadmin ? 'superadmin' : '' ?>">
-            <i class="fas <?= $is_superadmin ? 'fa-crown' : 'fa-user' ?>"></i>
-            <span><?= $is_superadmin ? 'Super Administrador' : 'Administrador' ?></span>
-        </div>
-    </div>
+    <div class="dashboard-container container">
 
-    <!-- Estadísticas -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <i class="fas fa-clock stat-icon"></i>
-            <div class="stat-content">
-                <h3>Reservas Pendientes</h3>
-                <p class="stat-number"><?= number_format($reservas_pendientes) ?></p>
+        <!-- Header de bienvenida personalizado -->
+        <div class="welcome-header">
+            <div class="welcome-text">
+                <h2>¡Bienvenido(a), <?= htmlspecialchars($_SESSION['usuario_nombre']) ?>!</h2>
+                <p><?php
+                    setlocale(LC_TIME, 'es_ES.UTF-8', 'es_ES', 'Spanish_Spain', 'es');
+                    echo strftime('%A, %d de %B de %Y');
+                    ?></p>
+            </div>
+            <div class="user-badge <?= $is_superadmin ? 'superadmin' : '' ?>">
+                <i class="fas <?= $is_superadmin ? 'fa-crown' : 'fa-user' ?>"></i>
+                <span><?= $is_superadmin ? 'Super Administrador' : 'Administrador' ?></span>
             </div>
         </div>
 
-        <div class="stat-card">
-            <i class="fas fa-calendar-day stat-icon"></i>
-            <div class="stat-content">
-                <h3>Reservas Hoy</h3>
-                <p class="stat-number"><?= number_format($reservas_hoy) ?></p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <i class="fas fa-check-circle stat-icon"></i>
-            <div class="stat-content">
-                <h3>Días Habilitados</h3>
-                <p class="stat-number"><?= number_format($dias['habilitados']) ?></p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <i class="fas fa-ban stat-icon"></i>
-            <div class="stat-content">
-                <h3>Días Deshabilitados</h3>
-                <p class="stat-number"><?= number_format($dias['deshabilitados']) ?></p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <i class="fas fa-gift stat-icon"></i>
-            <div class="stat-content">
-                <h3>Tipos de Evento</h3>
-                <p class="stat-number"><?= number_format($tipos_activos) ?></p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <i class="fas fa-users stat-icon"></i>
-            <div class="stat-content">
-                <h3>Clientes Activos</h3>
-                <p class="stat-number"><?= number_format($clientes_activos) ?></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Acceso Rápido -->
-    <div class="quick-access">
-        <div class="section-header">
-            <h3 class="section-title">Acceso Rápido</h3>
-            <?php if (!$is_superadmin): ?>
-                <span class="role-indicator">
-                    <i class="fas fa-eye"></i> Modo consulta
-                </span>
-            <?php endif; ?>
-        </div>
-        
-        <div class="quick-actions-grid">
-            <a href="disponibilidad.php" class="action-card">
-                <i class="fas fa-calendar-alt"></i>
-                <div>
-                    <h4>Disponibilidad</h4>
-                    <p>Gestionar calendario</p>
-                    <?php if (!$is_superadmin): ?>
-                        <span class="restricted-badge"><i class="fas fa-lock-open"></i> Solo ver/editar</span>
-                    <?php endif; ?>
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-clock stat-icon"></i>
+                <div class="stat-content">
+                    <h3>Reservas Pendientes</h3>
+                    <p class="stat-number"><?= number_format($reservas_pendientes) ?></p>
                 </div>
-            </a>
+            </div>
 
-            <a href="tipos_evento.php" class="action-card">
-                <i class="fas fa-gift"></i>
-                <div>
-                    <h4>Tipos de Evento</h4>
-                    <p>Catálogo de servicios</p>
-                    <?php if (!$is_superadmin): ?>
-                        <span class="restricted-badge"><i class="fas fa-lock"></i> Solo lectura</span>
-                    <?php endif; ?>
+            <div class="stat-card">
+                <i class="fas fa-calendar-day stat-icon"></i>
+                <div class="stat-content">
+                    <h3>Reservas Hoy</h3>
+                    <p class="stat-number"><?= number_format($reservas_hoy) ?></p>
                 </div>
-            </a>
+            </div>
 
-            <a href="reservas.php" class="action-card">
-                <i class="fas fa-list"></i>
-                <div>
-                    <h4>Reservas</h4>
-                    <p>Gestionar pedidos</p>
+            <div class="stat-card">
+                <i class="fas fa-check-circle stat-icon"></i>
+                <div class="stat-content">
+                    <h3>Días Habilitados</h3>
+                    <p class="stat-number"><?= number_format($dias['habilitados']) ?></p>
                 </div>
-            </a>
+            </div>
 
-            <a href="clientes.php" class="action-card">
-                <i class="fas fa-users"></i>
-                <div>
-                    <h4>Clientes</h4>
-                    <p>Directorio de contactos</p>
-                    <?php if (!$is_superadmin): ?>
-                        <span class="restricted-badge"><i class="fas fa-lock"></i> Solo lectura</span>
-                    <?php endif; ?>
+            <div class="stat-card">
+                <i class="fas fa-ban stat-icon"></i>
+                <div class="stat-content">
+                    <h3>Días Deshabilitados</h3>
+                    <p class="stat-number"><?= number_format($dias['deshabilitados']) ?></p>
                 </div>
-            </a>
+            </div>
 
-            <?php if ($is_superadmin): ?>
-                <a href="usuarios.php" class="action-card">
-                    <i class="fas fa-user-shield"></i>
+            <div class="stat-card">
+                <i class="fas fa-gift stat-icon"></i>
+                <div class="stat-content">
+                    <h3>Tipos de Evento</h3>
+                    <p class="stat-number"><?= number_format($tipos_activos) ?></p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <i class="fas fa-users stat-icon"></i>
+                <div class="stat-content">
+                    <h3>Clientes Activos</h3>
+                    <p class="stat-number"><?= number_format($clientes_activos) ?></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acceso Rápido -->
+        <div class="quick-access">
+            <div class="section-header">
+                <h3 class="section-title">Acceso Rápido</h3>
+                <?php if (!$is_superadmin): ?>
+                    <span class="role-indicator">
+                        <i class="fas fa-eye"></i> Modo consulta
+                    </span>
+                <?php endif; ?>
+            </div>
+
+            <div class="quick-actions-grid">
+                <?php if ($is_superadmin || $_SESSION['rol_nombre'] === 'admin'): ?>
+                    <a href="disponibilidad.php" class="action-card">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <h4>Disponibilidad</h4>
+                            <p>Gestionar calendario</p>
+                            <?php if (!$is_superadmin): ?>
+                                <span class="restricted-badge"><i class="fas fa-lock-open"></i> Solo ver/editar</span>
+                            <?php endif; ?>
+                        </div>
+                    </a>
+                <?php endif; ?>
+
+                <a href="tipos_evento.php" class="action-card">
+                    <i class="fas fa-gift"></i>
                     <div>
-                        <h4>Usuarios</h4>
-                        <p>Administrar cuentas</p>
+                        <h4>Tipos de Evento</h4>
+                        <p>Catálogo de servicios</p>
+                        <?php if (!$is_superadmin): ?>
+                            <span class="restricted-badge"><i class="fas fa-lock"></i> Solo lectura</span>
+                        <?php endif; ?>
                     </div>
                 </a>
-            <?php endif; ?>
+
+                <a href="reservas.php" class="action-card">
+                    <i class="fas fa-list"></i>
+                    <div>
+                        <h4>Reservas</h4>
+                        <p>Gestionar pedidos</p>
+                    </div>
+                </a>
+
+                <a href="clientes.php" class="action-card">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <h4>Clientes</h4>
+                        <p>Directorio de contactos</p>
+                        <?php if (!$is_superadmin): ?>
+                            <span class="restricted-badge"><i class="fas fa-lock"></i> Solo lectura</span>
+                        <?php endif; ?>
+                    </div>
+                </a>
+
+                <?php if ($is_superadmin): ?>
+                    <a href="usuarios.php" class="action-card">
+                        <i class="fas fa-user-shield"></i>
+                        <div>
+                            <h4>Usuarios</h4>
+                            <p>Administrar cuentas</p>
+                        </div>
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-</div>
 
 </body>
+
 </html>

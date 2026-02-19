@@ -2,7 +2,6 @@
 session_start();
 require_once '../config/database.php';
 
-// Protección + timeout
 $session_timeout = 1200;
 
 if (isset($_SESSION['ultimo_acceso'])) {
@@ -29,10 +28,8 @@ if (!isset($_SESSION['usuario_id']) ||
     exit;
 }
 
-// Determinar si el usuario es superadmin (solo él puede editar)
 $is_superadmin = ($_SESSION['rol_nombre'] === 'superadmin');
 
-// Procesar acciones POST (solo si es superadmin)
 $message = '';
 $message_type = 'success';
 
@@ -56,7 +53,7 @@ if ($is_superadmin && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
                 $stmt->execute([$nombre, $slug, $descripcion, $precio_base, $duracion_horas, $activo]);
                 $message = 'Tipo de evento agregado correctamente.';
-            } else { // edit
+            } else {
                 $id = intval($_POST['id'] ?? 0);
                 $stmt = $pdo->prepare("
                     UPDATE tipos_evento 
@@ -73,14 +70,12 @@ if ($is_superadmin && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$nuevo_estado, $id]);
             $message = 'Estado actualizado correctamente.';
         }
-        // ELIMINADO: acción 'delete' - No se permite eliminar registros
     } catch (PDOException $e) {
         $message = 'Error: ' . $e->getMessage();
         $message_type = 'error';
     }
 }
 
-// Cargar lista de tipos de evento - SIN PAGINACIÓN (todos)
 $stmt = $pdo->query("SELECT * FROM tipos_evento ORDER BY nombre ASC");
 $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -94,7 +89,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Estilos mejorados sin afectar lógica */
         .tipos-container {
             padding: 2rem 1rem;
             max-width: 1400px;
@@ -122,7 +116,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 3px;
         }
 
-        /* Mensajes mejorados */
         .success-msg, .error-msg {
             padding: 1rem 1.5rem;
             border-radius: var(--radius);
@@ -168,7 +161,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        /* Sección de formulario mejorada */
         .form-section {
             background: white;
             padding: 2rem;
@@ -244,7 +236,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             transform: scale(1.1);
         }
 
-        /* Sección de lista */
         .lista-section {
             margin-top: 3rem;
         }
@@ -263,7 +254,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 1.3rem;
         }
 
-        /* Total de registros */
         .total-registros {
             text-align: right;
             margin: 1rem 0;
@@ -276,7 +266,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: var(--primary);
         }
 
-        /* Tabla mejorada */
         .table-responsive {
             overflow-x: auto;
             margin: 2rem 0;
@@ -317,7 +306,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background: #fcf8f6;
         }
 
-        /* Badges de estado */
         .badge {
             display: inline-block;
             padding: 0.4rem 1rem;
@@ -340,14 +328,12 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border: 1px solid #f5c6cb;
         }
 
-        /* Precio destacado */
         .precio-tabla {
             font-weight: 700;
             color: var(--primary);
             font-size: 1.1rem;
         }
 
-        /* Botones de acción mejorados */
         .action-buttons {
             display: flex;
             gap: 0.5rem;
@@ -397,7 +383,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background: var(--secondary-dark);
         }
 
-        /* Modal mejorado */
         .modal {
             position: fixed;
             top: 0;
@@ -458,7 +443,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             transform: scale(1.1);
         }
 
-        /* Mensaje sin resultados */
         .no-results {
             text-align: center;
             padding: 3rem !important;
@@ -472,7 +456,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             opacity: 0.3;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .tipos-container {
                 padding: 1.5rem 0.5rem;
@@ -533,7 +516,6 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php endif; ?>
 
     <?php if ($is_superadmin): ?>
-        <!-- Formulario para agregar nuevo (solo superadmin) -->
         <div class="form-section">
             <h3>Agregar Nuevo Tipo de Evento</h3>
             <form method="POST" action="">
@@ -579,11 +561,9 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     <?php endif; ?>
 
-    <!-- Lista de tipos existentes -->
     <div class="lista-section">
         <h3>Tipos de Evento Existentes</h3>
         
-        <!-- Total de registros -->
         <div class="total-registros">
             Mostrando <span><?= count($tipos) ?></span> tipos de evento
         </div>
@@ -597,7 +577,7 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <th>Precio Base</th>
                         <th>Duración</th>
                         <th>Estado</th>
-                        <?php if ($is_superadmin): ?>
+                        <?php if ($is_superadmin || $_SESSION['rol_nombre'] === 'admin'): ?>
                             <th>Acciones</th>
                         <?php endif; ?>
                     </tr>
@@ -605,7 +585,7 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tbody>
                     <?php if (empty($tipos)): ?>
                         <tr>
-                            <td colspan="<?= $is_superadmin ? 6 : 5 ?>" class="no-results">
+                            <td colspan="<?= ($is_superadmin || $_SESSION['rol_nombre'] === 'admin') ? 6 : 5 ?>" class="no-results">
                                 <i class="fas fa-gift"></i>
                                 No hay tipos de evento registrados
                             </td>
@@ -622,22 +602,26 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?= $tipo['activo'] ? 'Activo' : 'Inactivo' ?>
                                     </span>
                                 </td>
-                                <?php if ($is_superadmin): ?>
+                                <?php if ($is_superadmin || $_SESSION['rol_nombre'] === 'admin'): ?>
                                     <td>
                                         <div class="action-buttons">
-                                            <button class="btn btn-secondary btn-small" onclick="editTipo(<?= $tipo['id'] ?>, '<?= addslashes($tipo['nombre']) ?>', '<?= addslashes($tipo['slug']) ?>', '<?= addslashes($tipo['descripcion'] ?? '') ?>', <?= $tipo['precio_base'] ?>, <?= $tipo['duracion_horas'] ?>, <?= $tipo['activo'] ?>)">
-                                                <i class="fas fa-edit"></i> Editar
-                                            </button>
-                                            <form method="POST" style="display:inline;">
-                                                <input type="hidden" name="action" value="toggle_active">
-                                                <input type="hidden" name="id" value="<?= $tipo['id'] ?>">
-                                                <input type="hidden" name="nuevo_estado" value="<?= $tipo['activo'] ? 0 : 1 ?>">
-                                                <button type="submit" class="btn <?= $tipo['activo'] ? 'btn-danger' : 'btn-success' ?> btn-small">
-                                                    <i class="fas <?= $tipo['activo'] ? 'fa-ban' : 'fa-check' ?>"></i>
-                                                    <?= $tipo['activo'] ? 'Desactivar' : 'Activar' ?>
+                                            <?php if ($is_superadmin || $_SESSION['rol_nombre'] === 'admin'): ?>
+                                                <button class="btn btn-secondary btn-small" onclick="editTipo(<?= $tipo['id'] ?>, '<?= addslashes($tipo['nombre']) ?>', '<?= addslashes($tipo['slug']) ?>', '<?= addslashes($tipo['descripcion'] ?? '') ?>', <?= $tipo['precio_base'] ?>, <?= $tipo['duracion_horas'] ?>, <?= $tipo['activo'] ?>)">
+                                                    <i class="fas fa-edit"></i> Editar
                                                 </button>
-                                            </form>
-                                            <!-- ELIMINADO: Botón de eliminar -->
+                                            <?php endif; ?>
+
+                                            <?php if ($is_superadmin): ?>
+                                                <form method="POST" style="display:inline;">
+                                                    <input type="hidden" name="action" value="toggle_active">
+                                                    <input type="hidden" name="id" value="<?= $tipo['id'] ?>">
+                                                    <input type="hidden" name="nuevo_estado" value="<?= $tipo['activo'] ? 0 : 1 ?>">
+                                                    <button type="submit" class="btn <?= $tipo['activo'] ? 'btn-danger' : 'btn-success' ?> btn-small">
+                                                        <i class="fas <?= $tipo['activo'] ? 'fa-ban' : 'fa-check' ?>"></i>
+                                                        <?= $tipo['activo'] ? 'Desactivar' : 'Activar' ?>
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 <?php endif; ?>
@@ -650,8 +634,7 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Modal para editar (solo visible para superadmin) -->
-<?php if ($is_superadmin): ?>
+<?php if ($is_superadmin || $_SESSION['rol_nombre'] === 'admin'): ?>
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
@@ -704,7 +687,7 @@ $tipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 <?php endif; ?>
 
-<?php if ($is_superadmin): ?>
+<?php if ($is_superadmin || $_SESSION['rol_nombre'] === 'admin'): ?>
 <script>
 function editTipo(id, nombre, slug, descripcion, precio_base, duracion_horas, activo) {
     document.getElementById('edit_id').value = id;
@@ -721,7 +704,6 @@ function closeModal() {
     document.getElementById('editModal').style.display = 'none';
 }
 
-// Cerrar modal al hacer clic fuera
 window.onclick = function(event) {
     const modal = document.getElementById('editModal');
     if (event.target == modal) {
