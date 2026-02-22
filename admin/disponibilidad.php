@@ -463,6 +463,17 @@ document.addEventListener('DOMContentLoaded', function () {
             const fecha = info.dateStr;
             const eventObj = calendar.getEvents().find(ev => ev.startStr === fecha);
 
+            // Validar que la fecha no sea pasada
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            const fechaClick = new Date(fecha);
+            fechaClick.setHours(0, 0, 0, 0);
+            
+            if (fechaClick < hoy) {
+                mostrarMensaje('No se pueden modificar días pasados', 'error');
+                return;
+            }
+
             let accion, mensaje, tipoMensaje = 'info';
 
             if (ultimaFecha === fecha && ultimaAccion) {
@@ -518,7 +529,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     mostrarMensaje(mensaje, tipoMensaje);
                 }
                 
-                // Resetear después de 1 segundo
                 setTimeout(() => {
                     ultimaFecha = null;
                     ultimaAccion = null;
@@ -534,7 +544,6 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         eventDidMount: function(info) {
-            // Aplicar estilos adicionales si es necesario
             if (info.event.classNames.includes('disponible')) {
                 info.el.style.backgroundColor = '#d4edda';
                 info.el.style.borderColor = '#28a745';
@@ -559,16 +568,13 @@ document.addEventListener('DOMContentLoaded', function () {
     calendar.render();
 
     function mostrarMensaje(texto, tipo = 'info') {
-        // Limpiar timeout anterior
         if (mensajeDiv.timeout) {
             clearTimeout(mensajeDiv.timeout);
         }
 
-        // Configurar mensaje
         mensajeTexto.innerText = texto;
         mensajeDiv.className = 'mensaje-flotante ' + tipo;
         
-        // Añadir icono según tipo
         const icono = mensajeDiv.querySelector('i');
         if (icono) {
             if (tipo === 'success') icono.className = 'fas fa-check-circle';
@@ -576,10 +582,8 @@ document.addEventListener('DOMContentLoaded', function () {
             else icono.className = 'fas fa-info-circle';
         }
 
-        // Mostrar mensaje
         mensajeDiv.classList.add('mostrar');
 
-        // Ocultar después de 2.5 segundos
         mensajeDiv.timeout = setTimeout(() => {
             mensajeDiv.classList.remove('mostrar');
         }, 2500);
